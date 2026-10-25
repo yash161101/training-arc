@@ -1,0 +1,10 @@
+{
+  "name": "training-arc",
+  "main": "src/worker.js",
+  "compatibility_date": "2025-09-01",
+  "assets": { "directory": "./public", "binding": "ASSETS" },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "training-arc", "database_id": "091489f9-1298-41e2-9fd4-e3c8a576481c", "migrations_dir": "migrations" }
+  ],
+  "observability": { "enabled": true }
+}

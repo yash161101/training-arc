@@ -1,0 +1,84 @@
+# Ideas: a living register
+
+**Started:** 23 October 2026 · **Owner:** Yash
+**State:** living document. Nothing here is approved to build unless its entry says **Agreed**
+and gives a date. Nothing in this file is a code change.
+
+## How to use this file
+
+**For the owner:** skim the map. Tell the assistant `KEEP`, `LATER` or `NO` for any entry, in
+chat. Your words and the date get recorded in the entry.
+
+**For the assistant:**
+- Add new ideas under the right theme with the next free ID. Never renumber.
+- `KEEP` means "write a plan", not "build". Agreed ideas get their own `docs/<idea>-plan.md`.
+- If an idea is rejected, record why, so it is never pitched again.
+- When an idea ships, record the date and what was checked. Leave the entry.
+
+Statuses: **Idea**, **Discussing**, **Agreed**, **In build**, **Shipped**, **Parked** (with the
+condition to revisit), **Rejected** (with the reason).
+
+## The map
+
+### A. The core (version 1)
+
+| ID | Idea | Status |
+|---|---|---|
+| `AU-01` | The Oath: sign up with a fighter name and an oath; data encrypted on the device | Built 25 Oct 2026, not deployed |
+| `GH-01` | Your ghost on every set, from the last time you did the exercise | Built 25 Oct 2026, not deployed |
+| `BS-01` | Boss fights against your best-ever self, summoned when you're close | Built 25 Oct 2026, not deployed |
+| `EP-01` | Episodes: every session numbered, with a plain title from what happened | Built 25 Oct 2026, not deployed |
+| `HI-01` | History and progress charts | Built 25 Oct 2026, not deployed |
+| `LG-01` | Logging: pick exercises, then repeat; tick or correct each set | Built 25 Oct 2026, not deployed |
+
+### B. Next candidates
+
+| ID | Idea | Status |
+|---|---|---|
+| `OF-01` | Offline first: finish an episode with no signal, sync later | Idea |
+| `AU-02` | Change your oath (re-wrap the key, no data re-encryption needed) | Idea |
+| `SH-01` | Share an episode card as an image | Idea |
+| `EG-01` | Easter eggs and secrets to find (owner wants these, 24 Oct 2026) | Idea |
+| `RT-01` | Rest timer between sets | Idea |
+| `PL-01` | The app plans today's workout from what's rested | Idea |
+
+### C. The world and the character
+
+| ID | Idea | Status |
+|---|---|---|
+| `WD-01` | A world or scene (dojo, mountain) that reacts to what happened in a session | Parked |
+| `CH-01` | A 3D or illustrated character with a see-through blue ghost copy | Parked |
+
+**Why parked (25 Oct 2026):** five rounds of mockups didn't land; animating the character for
+each exercise doesn't scale (owner). **Revisit when:** the owner has used v1 at the gym for a week
+or two and knows where a world would actually add something. Mockups are in the "Training Arc:
+today's workout" design canvas on claude.ai. Liked so far: the ghost walking into the dojo, a
+see-through blue copy of your character (not a cartoon ghost), the dojo at the foot of a
+mountain idea.
+
+### D. Later
+
+| ID | Idea | Status |
+|---|---|---|
+| `NU-01` | Nutrition as one-tap meal cards; must handle Indian vegetarian food | Parked until the workout loop is in use |
+| `VL-01` | Connect with Vishal's planner (a finished workout shows up in his village) | Parked: siblings first, connected later (owner, 24 Oct 2026) |
+
+## Not pursued (and why)
+
+| Idea | Why |
+|---|---|
+| Named multi-week "arcs" with a goal | Owner didn't like it (24 Oct 2026). Bosses appear on their own instead. |
+| A predicting "smart coach" as the selling point | Owner: "thats obvious nothing cool about it" (24 Oct 2026). Fine under the hood. |
+| Retro arcade, ink brush, dark "system" HUD, shonen poster looks | Owner rejected each (23 to 24 Oct 2026). |
+| A girl character as the stand-in | Owner disliked it (24 Oct 2026). |
+| Kakashi, Goku or other licensed characters | Owned by their studios; the app is meant to be public. |
+| Calling an AI model inside the app | Claude is the coding partner only (owner, 23 Oct 2026). |
+| Making money from this app | Money is a separate project (owner, 23 Oct 2026). |
+
+## Change log
+
+- **25 October 2026:** version 1 built (AU-01, GH-01, BS-01, EP-01, HI-01, LG-01). World and
+  character parked. Register rewritten around the shipped core.
+- **24 October 2026:** pivot to logging first; product story agreed (ghost, bosses, episodes,
+  dojo).
+- **23 October 2026:** register started from the brainstorm.

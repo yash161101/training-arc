@@ -1,0 +1,14 @@
+{
+  "name": "Training Arc",
+  "short_name": "Training Arc",
+  "description": "A gym tracker where your rival is you.",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F1E6D0",
+  "theme_color": "#F1E6D0",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

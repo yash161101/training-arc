@@ -1,0 +1,16 @@
+{
+  "name": "training-arc",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:local": "wrangler d1 migrations apply training-arc --local",
+    "db:remote": "wrangler d1 migrations apply training-arc --remote",
+    "check": "node checks/e2e.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4",
+    "playwright": "^1"
+  }
+}
