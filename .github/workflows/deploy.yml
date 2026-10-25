@@ -26,7 +26,7 @@ jobs:
         run: echo "::notice::Add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID in repo settings to turn on auto-deploy."
       - uses: actions/checkout@v4
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
         with:
           node-version: 22
