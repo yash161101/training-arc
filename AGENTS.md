@@ -107,7 +107,10 @@ Edit `AGENTS.md`; never replace the link with a copy.
 **25 October 2026: on GitHub.** Repo created by the owner; the project was pushed with a clean
 history, plus CI (checks on every push), auto-deploy on `main`, weekly backups, Dependabot, and a
 version line in Settings. Auto-deploy waits for the owner to add `CLOUDFLARE_API_TOKEN` and
-`CLOUDFLARE_ACCOUNT_ID` as repo secrets. Brainstormed invite codes; the owner hadn't picked one
+`CLOUDFLARE_ACCOUNT_ID` as repo secrets (he will do it himself; never handle the token). First
+GitHub run: checks 27/27 passed, deploy skipped as designed. The owner's Mac folder
+`~/Documents/fitness_tracker` is now a clone of the repo (gh CLI signed in); after pushing, tell
+him to `git pull`. Brainstormed invite codes; the owner hadn't picked one
 yet.
 
 **25 October 2026: invite code added.** Joining now needs the invite code (see How it works).
