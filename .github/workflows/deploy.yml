@@ -41,4 +41,11 @@ jobs:
         run: npx wrangler d1 migrations apply training-arc --remote
       - name: Deploy
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
-        run: npx wrangler deploy
+        run: |
+          set +e
+          npx wrangler deploy 2>&1 | tee deploy.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            echo "::error title=Deploy failed::$(tail -25 deploy.log | sed 's/\x1b\[[0-9;]*m//g' | awk '{printf "%s%%0A", $0}')"
+          fi
+          exit $status
