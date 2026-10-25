@@ -27,12 +27,19 @@ Until both are set, deploys are skipped (checks still run).
 ### Make this folder track GitHub (once)
 
 ```
+brew install gh
+gh auth login
+gh auth setup-git
 cd ~/Documents/fitness_tracker
 git init -b main
 git remote add origin https://github.com/yash161101/training-arc.git
 git fetch origin
-git reset origin/main
+git reset --hard origin/main
 ```
+
+`gh auth login` signs Terminal in to GitHub (pick GitHub.com, HTTPS, log in with a browser). The
+last line makes the folder match GitHub exactly; your `node_modules`, `.wrangler` and `_archive`
+folders are ignored and stay put.
 
 After that, `git pull` brings in changes made elsewhere.
 
