@@ -35,6 +35,8 @@ condition to revisit), **Rejected** (with the reason).
 
 | ID | Idea | Status |
 |---|---|---|
+| `BR-01` | Stack brand: blocks as the tracking shape, yellow on concrete, new icon | **Agreed** 26 Oct 2026 (owner: "lets do stack"). Built 26 Oct 2026 |
+| `DM-01` | Dark and light mode, Auto follows the phone | **Agreed** 26 Oct 2026 (owner: "add a dark/light mode thing to it, deploy it"). Built 26 Oct 2026 |
 | `OF-01` | Offline first: the app opens and saves with no signal, and syncs by itself when back online | **Agreed** 26 Oct 2026 (owner: "its always synced and live aand even works without the internet (only syncs when internet th)"). Built 26 Oct 2026 |
 | `AU-02` | Change your oath (re-wrap the key, no data re-encryption needed) | Idea |
 | `SH-01` | Share an episode card as an image | Idea |
@@ -77,6 +79,7 @@ mountain idea.
 
 ## Change log
 
+- **26 October 2026:** BR-01 (Stack brand) and DM-01 (dark mode) agreed and built.
 - **26 October 2026:** OF-01 agreed and built: works offline, syncs on its own, a sync chip on
   home shows the state.
 - **25 October 2026:** version 1 built (AU-01, GH-01, BS-01, EP-01, HI-01, LG-01). World and

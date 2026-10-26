@@ -15,13 +15,13 @@ const ok = (name, cond, extra = '') => {
 };
 
 const browser = await chromium.launch(process.env.CHROME ? { executablePath: process.env.CHROME } : {});
-const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, colorScheme: process.env.SCHEME === 'dark' ? 'dark' : 'light' });
 const page = await ctx.newPage();
 const errors = [];
 page.on('console', (m) => { if (m.type() === 'error' && !/status of (401|403|404)|ERR_INTERNET_DISCONNECTED|net::ERR_FAILED/.test(m.text())) errors.push(m.text()); });
 page.on('pageerror', (e) => errors.push(e.message));
 page.on('dialog', (d) => d.accept());
-const shot = (n) => page.screenshot({ path: SHOTS + n + '.png' });
+const shot = (n) => page.screenshot({ path: SHOTS + (process.env.SCHEME === 'dark' ? 'dark-' : '') + n + '.png' });
 
 async function finishEpisode() {
   await page.click('[data-act="finish"]');
@@ -204,6 +204,14 @@ await ctx3.close();
 
 await page.click('[data-act="go"][data-view="settings"]');
 ok('Settings says this phone stays signed in', (await page.textContent('.remembered')).includes('stays signed in'));
+await page.click('[data-act="theme"][data-theme="dark"]');
+ok('Dark mode can be picked', (await page.evaluate(() => document.documentElement.dataset.theme)) === 'dark');
+await page.reload();
+await page.waitForSelector('.hero');
+ok('Dark mode stays after a reload', (await page.evaluate(() => document.documentElement.dataset.theme)) === 'dark');
+await page.click('[data-act="go"][data-view="settings"]');
+await page.click('[data-act="theme"][data-theme="auto"]');
+ok('Auto goes back to following the phone', (await page.evaluate(() => document.documentElement.dataset.theme)) === undefined);
 await page.click('[data-act="lock"]');
 await page.waitForSelector('form[data-form="return"]');
 await page.fill('input[name="name"]', NAME);
