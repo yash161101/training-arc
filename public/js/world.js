@@ -101,6 +101,18 @@ export function neglectNote(w) {
   return worst ? notes[worst[0]](worst[1]) : '';
 }
 
+export function skyClasses(root, sky) {
+  const w = sky.weather;
+  const c = root.classList;
+  c.toggle('is-night', sky.night);
+  c.toggle('is-dusk', sky.phase === 'dusk' || sky.phase === 'dawn');
+  c.toggle('is-rain', w === 'rain' || w === 'storm');
+  c.toggle('is-storm', w === 'storm');
+  c.toggle('is-snow', w === 'snow');
+  c.toggle('is-fog', w === 'fog');
+  c.toggle('is-cloudy', w === 'cloudy' || w === 'rain' || w === 'storm');
+}
+
 const show = (root, sel, on) => { const el = root.querySelector(sel); if (el) el.setAttribute('display', on ? 'inline' : 'none'); };
 const over = (d, n) => d != null && d >= n;
 
@@ -171,7 +183,7 @@ export function paintClimb(root, w, sky) {
     el.setAttribute('class', 'c-step ' + k);
   });
   root.querySelectorAll('.c-land').forEach((el) => el.setAttribute('class', 'c-land ' + (+el.dataset.i <= c.laid ? 'on' : 'off')));
-  root.classList.toggle('is-night', sky.night);
+  skyClasses(root, sky);
   show(root, '#c-nightsky', sky.night);
   show(root, '#c-night', sky.night);
   const cur = steps[Math.max(0, c.laid - 1)];
@@ -200,7 +212,7 @@ export function paintPlace(root, w, sky, key, bossWaiting) {
     if (label) label.textContent = w.bosses[i] ? `Ep ${w.bosses[i].n}` : '';
   });
   root.querySelectorAll('.u-land').forEach((el) => el.setAttribute('class', 'u-land ' + (+el.dataset.i <= c.laid ? 'on' : 'off')));
-  root.classList.toggle('is-night', sky.night);
+  skyClasses(root, sky);
   show(root, '#n-night', sky.night);
   show(root, '#n-nightsky', sky.night);
   show(root, '#n-vines', key === 'push' && over(w.neglect.push, 7));
@@ -221,6 +233,7 @@ export function paintDojo(root, w, sky) {
     el.setAttribute('class', 'd-scroll ' + (ex ? 'open' : 'rolled'));
     el.querySelectorAll('.m').forEach((m) => m.setAttribute('display', ex && +m.dataset.k < ex.form ? 'inline' : 'none'));
   });
+  skyClasses(root, sky);
   show(root, '#d-night', sky.night);
   show(root, '#d-ray', !sky.night);
 }

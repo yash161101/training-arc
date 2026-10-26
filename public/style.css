@@ -489,3 +489,29 @@ button:disabled { cursor: default; opacity: .55; }
 
 .toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 92px); z-index: 60; max-width: min(92vw, 420px); transform: translate(-50%, 20px); opacity: 0; pointer-events: none; padding: 12px 16px; background: var(--ink); color: var(--paper); border: 2px solid var(--ink); box-shadow: 4px 4px 0 var(--you); font-weight: 700; font-size: 15px; transition: transform .18s ease, opacity .18s ease; }
 .toast.show { transform: translate(-50%, 0); opacity: 1; }
+
+.scene .k-night, .scene .k-rain, .scene .k-snow, .scene .k-fog, .scene .k-dusk, .scene .k-cloudy { display: none; }
+.scene.is-night .k-night, .scene.is-rain .k-rain, .scene.is-snow .k-snow, .scene.is-fog .k-fog, .scene.is-dusk .k-dusk, .scene.is-cloudy .k-cloudy { display: inline; }
+.scene.is-night .k-day, .scene.is-rain .k-clear, .scene.is-snow .k-clear { display: none; }
+.a-grass { transform-box: fill-box; transform-origin: 50% 100%; animation: a-grass 3.4s ease-in-out infinite; }
+@keyframes a-grass { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(5deg); } }
+.a-birds-s { animation: a-birds-s 26s linear infinite; }
+@keyframes a-birds-s { from { transform: translate(-700px, 30px); } to { transform: translate(600px, -20px); } }
+.a-spark { transform-box: fill-box; animation: a-spark 1.8s ease-out infinite; }
+@keyframes a-spark { 0% { transform: translate(0, 0); opacity: 0; } 10% { opacity: 1; } 100% { transform: translate(22px, -170px); opacity: 0; } }
+.a-spark.a-p1 { animation-duration: 2.3s; }
+.a-spark.a-p2 { animation-duration: 1.5s; animation-name: a-spark2; }
+@keyframes a-spark2 { 0% { transform: translate(0, 0); opacity: 0; } 10% { opacity: 1; } 100% { transform: translate(-26px, -140px); opacity: 0; } }
+.a-mote { animation: a-mote 9s ease-in-out infinite; }
+@keyframes a-mote { 0%, 100% { transform: translate(0, 0); opacity: 0.2; } 50% { transform: translate(14px, -22px); opacity: 0.9; } }
+.a-swing { transform-box: fill-box; transform-origin: 50% 0; animation: a-swing 3.2s ease-in-out infinite; }
+@keyframes a-swing { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+.a-hang { transform-box: fill-box; transform-origin: 50% 0; animation: a-hang 6s ease-in-out infinite; }
+@keyframes a-hang { 0%, 100% { transform: rotate(-1.2deg); } 50% { transform: rotate(1.2deg); } }
+.a-rope { transform-box: fill-box; transform-origin: 50% 0; animation: a-hang 7s ease-in-out infinite; }
+.a-tip { transform-box: fill-box; transform-origin: 66% 60%; animation: a-tip 6s ease-in-out infinite; }
+@keyframes a-tip { 0%, 70% { transform: rotate(0deg); } 78%, 84% { transform: rotate(-26deg); } 92%, 100% { transform: rotate(0deg); } }
+.a-pump { transform-box: fill-box; transform-origin: 0% 50%; animation: a-pump 1.6s ease-in-out infinite; }
+@keyframes a-pump { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.55); } }
+.a-dust { transform-box: fill-box; transform-origin: center; animation: a-dust 3.6s ease-out infinite; opacity: 0; }
+@keyframes a-dust { 0% { transform: scale(0.4); opacity: 0; } 20% { opacity: 0.7; } 100% { transform: translate(18px, -26px) scale(1.6); opacity: 0; } }
