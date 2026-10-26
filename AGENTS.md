@@ -170,7 +170,7 @@ Edit `AGENTS.md`; never replace the link with a copy.
 
 ## Latest (start here)
 
-**26 October 2026: the user journey, walked and fixed (branch `journey-polish`).** Owner: "Go
+**26 October 2026: the user journey, walked and fixed (PR #10, owner: "Merge"). Live.** Owner: "Go
 through the user journey using this app and fix all the complications and confusions and bugs
 etc as you encounter them. Make the app pretty and aesthetic while you're at it". Walked sign up,
 first workout, repeats, a boss, history, progress, every place and settings at phone size in light
@@ -184,7 +184,7 @@ show as outlined blocks, so a first episode has a tower too; the home chart show
 keeps your picks in order at the top, groups the list, and says "Start Ep. N · 3 exercises"; place
 chips are a tidy grid with what each place is for; tied stamps read well in dark mode; "Return" is
 now "Sign in". Episodes saved from now on also keep their tie and set counts. Checks 67/67 in light
-and dark. Not merged yet.
+and dark.
 
 **26 October 2026: the whole world is live (PR #9, owner: "Merge").** Owner asked for the other
 inside scenes, the sky to follow the real city, cleaner roads, and picked every real-world event
