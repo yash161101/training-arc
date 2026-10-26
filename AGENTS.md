@@ -146,6 +146,12 @@ Edit `AGENTS.md`; never replace the link with a copy.
 - `public/world/`: the seven scenes (valley, climb, dojo, cliff, yard, forge, boulders) as SVG with named parts the app switches
   on and off. Made by `tools/world/make.sh` (Python scripts; they refuse anything that would float
   above a surface). Edit the scripts, then rerun `make.sh`; never hand-edit the SVGs.
+  `tools/world/kit.py` holds the shared outdoor parts (sky, sun and moon, clouds, birds, snow-capped
+  mountains, treeline, grass, leaves, fireflies, weather) so every place looks like the same world
+  as the valley (owner: "make sure it looks natural aesthetic and not like weird svgs just put
+  together. It should all feel like they belong together", 26 Oct 2026). Inside scenes follow the
+  real sky too: `skyClasses` in `world.js` sets is-night, is-dusk, is-rain, is-snow, is-fog,
+  is-cloudy on the scene, and `k-*` parts show or hide from CSS.
 - `checks/e2e.mjs`: the full browser check (see README).
 - `.github/workflows/`: `checks.yml` (browser check on every push and PR), `deploy.yml` (push to
   `main`: checks, then database migrations and deploy; skipped until the Cloudflare secrets
@@ -169,6 +175,15 @@ Edit `AGENTS.md`; never replace the link with a copy.
 - **One idea per commit.**
 
 ## Latest (start here)
+
+**26 October 2026: every place comes alive (branch `scenes-alive`).** Owner: "In the boulders, the
+trees are in the air", "The individual screens look way too static", and they should all feel like
+they belong together. All six inside scenes now share the valley's sky, sun and moon, clouds, birds,
+snowy mountains, treeline and grass, and follow the real night, dusk, rain, snow and fog. Boulder
+trees stand behind the wall; the dojo roof shows over it; a maple drops leaves and a bamboo fountain
+tips. Movement everywhere: swaying grass and trees, drifting clouds, birds, sparks and bellows in the
+forge, a swinging sandbag and dust in the yard, vines and a swaying rope on the cliff, dust in the
+dojo light, incense, banners and the gong. Checks 67/67. Not merged.
 
 **26 October 2026: the user journey, walked and fixed (PR #10, owner: "Merge"). Live.** Owner: "Go
 through the user journey using this app and fix all the complications and confusions and bugs

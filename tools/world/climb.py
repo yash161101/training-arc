@@ -1,5 +1,6 @@
 import math, random, sys
 from build import defs, pine, smooth, pts
+import kit
 
 W, H = 900, 1600
 
@@ -39,6 +40,9 @@ def scene():
          '<linearGradient id="cfar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8FA8C8"/><stop offset="1" stop-color="#C4D0DD"/></linearGradient></defs>']
     s.append(f'<rect width="{W}" height="{H}" fill="url(#csky)"/>')
     s.append('<g id="c-nightsky" display="none"><rect width="900" height="1600" fill="#16224A" opacity="0.75"/>' + ''.join(f'<circle cx="{random.randint(0, W)}" cy="{random.randint(6, 700)}" r="{random.choice([1, 1, 1.5, 2])}" fill="#FFFFFF" opacity="{random.choice([0.5, 0.8, 1])}"/>' for _ in range(90)) + '</g>')
+    s.append('<g class="k-day"><circle cx="760" cy="150" r="200" fill="url(#sunglow)"/><circle cx="760" cy="150" r="44" fill="#FFF6DC"/></g><g class="k-night"><circle cx="760" cy="150" r="90" fill="url(#sunglow)" opacity="0.3"/><circle cx="760" cy="150" r="30" fill="#FFF3C9"/><circle cx="772" cy="141" r="27" fill="#1F2B52" opacity="0.85"/></g>')
+    s.append(kit.clouds(W, 80, 300, n=3, seed=4, scale=0.9))
+    s.append(kit.birds(300, 330))
     s.append('<polygon points="0,700 90,560 170,640 260,500 330,600 330,1200 0,1200" fill="url(#cfar)"/><polygon points="600,620 700,480 790,580 860,500 900,540 900,1200 600,1200" fill="url(#cfar)"/>')
     s.append('<polygon points="90,560 112,590 100,592 124,616 150,612 130,590 170,640 140,600" fill="#EEF3F8" opacity="0.9"/><polygon points="700,480 722,510 712,512 732,534 760,530 740,510" fill="#EEF3F8" opacity="0.9"/>')
     s.append(f'<polygon points="{pts(MOUNT_S + [(900, 1600), (0, 1600)])}" fill="url(#cmount)"/>')
@@ -64,7 +68,7 @@ def scene():
         if near < 46:
             continue
         h = 26 + (y - 700) / 820 * 46
-        s.append(pine(x, y, h))
+        s.append(f'<g class="a-tree a-d{i % 4}">{pine(x, y, h)}</g>' if i % 2 else pine(x, y, h))
     path_pts = ' '.join(f'{x:g},{y:g}' for x, y in WAY)
     s.append(f'<polyline points="{path_pts}" fill="none" stroke="#B89A6A" stroke-width="22" stroke-linejoin="round" opacity="0.55"/>')
     st = steps_along()
@@ -101,9 +105,12 @@ def scene():
     s.append('<g fill="#FFFFFF" opacity="0.55"><g class="a-cloud a-c3"><ellipse cx="450" cy="610" rx="210" ry="16"/><ellipse cx="620" cy="640" rx="140" ry="12"/></g></g>')
     s.append('<path d="M0 1500 Q450 1470 900 1500 L900 1600 L0 1600 Z" fill="#6E9A4C"/>')
     s.append('<g transform="translate(450 1566)"><rect x="-30" y="-6" width="60" height="8" fill="#8E9298"/><rect x="-12" y="-34" width="24" height="28" fill="#9A9EA4"/><rect x="-8" y="-28" width="16" height="10" fill="#FFC21A"/></g>')
-    s.append('<g fill="#4C7A31">' + ''.join(f'<use href="#tuft" transform="translate({x} {y}) scale(1.1)"/>' for x, y in [(60, 1580), (260, 1590), (380, 1570), (600, 1585), (720, 1596), (880, 1576)]) + '</g>')
+    s.append(kit.meadow(0, 900, 1510, 1598, 40, seed=21, avoid=[(400, 500, 1520, 1600)]))
+    s.append(kit.leaves(W, 700, 1400, n=6, seed=5, color='#78B35C'))
+    s.append(kit.weather(W, H))
+    s.append(kit.fireflies(0, 900, 1300, 1580, 16))
     s.append(f'<g id="c-night" display="none"><rect width="{W}" height="{H}" fill="#0D1636" opacity="0.5"/></g>')
-    return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" class="scene climb" role="img" aria-label="The climb up the hill">{defs()}{"".join(s)}</svg>'
+    return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" class="scene climb" role="img" aria-label="The climb up the hill">{defs()}{kit.defs_extra()}{"".join(s)}</svg>'
 
 if __name__ == '__main__':
     out = sys.argv[1]
