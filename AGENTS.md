@@ -170,7 +170,7 @@ Edit `AGENTS.md`; never replace the link with a copy.
 
 ## Latest (start here)
 
-**26 October 2026: the whole world (branch `grounds-world`, PR open).** Owner asked for the other
+**26 October 2026: the whole world is live (PR #9, owner: "Merge").** Owner asked for the other
 inside scenes, the sky to follow the real city, cleaner roads, and picked every real-world event
 and easter egg. All built: cliff, yard, forge and boulder garden; city sun and moon, weather,
 festivals and seasons; the easter eggs; tapered roads. Checks 63/63 (one pretends to be Mumbai on
