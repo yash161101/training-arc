@@ -44,9 +44,48 @@ const ICON = {
   check: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>',
 };
 
+function mark(cls = '') {
+  return `<svg class="mark ${cls}" viewBox="0 0 168 168" aria-hidden="true"><rect class="bg" width="168" height="168"></rect><rect class="blk" x="28" y="108" width="32" height="32"></rect><rect class="blk" x="68" y="108" width="32" height="32"></rect><rect class="blk" x="68" y="68" width="32" height="32"></rect><rect class="blk" x="108" y="108" width="32" height="32"></rect><rect class="blk" x="108" y="68" width="32" height="32"></rect><rect class="blk" x="108" y="28" width="32" height="32"></rect></svg>`;
+}
+
+function blk(t, x, y, b) {
+  if (t === 'half') return `<rect class="b-half" x="${x + 1}" y="${y + b / 2}" width="${b - 2}" height="${b / 2 - 1}"></rect><rect class="b-box" x="${x + 1}" y="${y + 1}" width="${b - 2}" height="${b - 2}"></rect>`;
+  return `<rect class="b-${t === 'ghost' ? 'ghost' : 'you'}" x="${x + 1}" y="${y + 1}" width="${b - 2}" height="${b - 2}"></rect>`;
+}
+
+function climb(recent) {
+  const eps = recent.slice(0, 6).reverse();
+  if (!eps.length) return mark('climb-mark');
+  const cols = eps.map((e) => ({ t: 'you', n: e.you || 0 }));
+  cols.push({ t: 'ghost', n: Math.max(1, recent[0].you || 0) });
+  const b = 16, gap = 3, rows = 6;
+  const most = Math.max(...cols.map((c) => c.n));
+  const k = most > rows ? rows / most : 1;
+  const h = rows * (b + gap) - gap;
+  let out = '';
+  cols.forEach((c, i) => {
+    const n = c.n ? Math.max(1, Math.round(c.n * k)) : 0;
+    for (let r = 0; r < n; r++) out += blk(c.t, i * (b + gap), h - (r + 1) * b - r * gap, b);
+  });
+  const w = cols.length * (b + gap) - gap;
+  out += `<rect class="b-line" x="0" y="${h + 2}" width="${w}" height="2"></rect>`;
+  return `<svg class="climb" width="${w}" height="${h + 4}" viewBox="0 0 ${w} ${h + 4}" role="img" aria-label="Sets you beat in your last ${eps.length} episodes, then today's target">${out}</svg>`;
+}
+
+function epColumn(ep) {
+  let tie = 0;
+  for (const it of ep.items) for (const x of it.sets) if (x.res === 'tie') tie++;
+  const parts = [...Array(ep.score.you).fill('you'), ...Array(tie).fill('half'), ...Array(ep.score.ghost).fill('ghost')].slice(0, 24);
+  const b = 18, gap = 3, cols = 3;
+  const rows = Math.max(1, Math.ceil(parts.length / cols));
+  const h = rows * (b + gap) - gap, w = cols * (b + gap) - gap;
+  const out = parts.map((t, i) => blk(t, (i % cols) * (b + gap), h - (Math.floor(i / cols) + 1) * b - Math.floor(i / cols) * gap, b)).join('');
+  return parts.length ? `<svg class="ep-col" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="${ep.score.you} sets beaten, ${tie} tied, ${ep.score.ghost} to the ghost">${out}</svg>` : '';
+}
+
 function bar(title, { back = null, right = '' } = {}) {
   return `<header class="bar">
-    ${back ? `<button class="icon-btn" data-act="go" data-view="${back}" aria-label="Back">${ICON.back}</button>` : '<span class="logo-sm">Training Arc</span>'}
+    ${back ? `<button class="icon-btn" data-act="go" data-view="${back}" aria-label="Back">${ICON.back}</button>` : `<span class="logo-sm">${mark('sm')}Training Arc</span>`}
     ${title ? `<span class="bar-title">${esc(title)}</span>` : '<span></span>'}
     ${right || '<span class="icon-spacer"></span>'}
   </header>`;
@@ -57,7 +96,7 @@ function errBox() {
 }
 
 function viewBoot() {
-  return `<main class="center"><div class="sun big"></div><h1 class="logo">Training<br>Arc</h1></main>`;
+  return `<main class="center">${mark('big')}<h1 class="logo">Training<br>Arc</h1></main>`;
 }
 
 function viewAuth() {
@@ -65,9 +104,9 @@ function viewAuth() {
   const t = st.showOath ? 'text' : 'password';
   return `<main class="auth">
     <section class="auth-hero">
-      <div class="sun"></div>
+      ${mark()}
       <h1 class="logo">Training<br>Arc</h1>
-      <p class="tag">Every set, you race who you were.</p>
+      <p class="tag">Beat your last workout. Every win lays a block.</p>
     </section>
     <div class="tabs" role="tablist">
       <button class="tab ${join ? 'on' : ''}" data-act="tab" data-tab="join" role="tab" aria-selected="${join}">Join</button>
@@ -87,7 +126,7 @@ function viewAuth() {
       <label class="check"><input type="checkbox" name="keep" checked><span>Stay signed in on this phone</span></label>
       <label class="check"><input type="checkbox" name="ok"><span>I understand: if I forget my passphrase, my data can't be recovered.</span></label>
       ${errBox()}
-      <button class="btn red" type="submit" ${st.busy ? 'disabled' : ''}>${st.busy ? esc(st.busy) : 'Start training'}</button>
+      <button class="btn primary" type="submit" ${st.busy ? 'disabled' : ''}>${st.busy ? esc(st.busy) : 'Start training'}</button>
     </form>` : `<form class="card form" data-form="return" autocomplete="on" novalidate>
       <label class="field"><span>Fighter name</span>
         <input name="name" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="20" value="${esc(st.lastName)}" required></label>
@@ -96,7 +135,7 @@ function viewAuth() {
       <button type="button" class="link" data-act="show-oath">${st.showOath ? 'Hide' : 'Show'}</button>
       <label class="check"><input type="checkbox" name="keep" checked><span>Stay signed in on this phone</span></label>
       ${errBox()}
-      <button class="btn red" type="submit" ${st.busy ? 'disabled' : ''}>${st.busy ? esc(st.busy) : 'Sign in'}</button>
+      <button class="btn primary" type="submit" ${st.busy ? 'disabled' : ''}>${st.busy ? esc(st.busy) : 'Sign in'}</button>
     </form>`}
   </main>`;
 }
@@ -121,13 +160,12 @@ function viewHome() {
   return `${bar('', { right: `<span class="bar-right">${syncChip()}<button class="icon-btn" data-act="go" data-view="settings" aria-label="Settings">${ICON.gear}</button></span>` })}
   <main class="home">
     <section class="hero">
-      <div class="sun"></div>
-      <span class="kicker">Next episode</span>
-      <div class="ep-num">Ep. ${nextEp()}</div>
+      <div class="hero-text"><span class="kicker">Next episode</span><div class="ep-num">Ep. ${nextEp()}</div></div>
+      ${climb(s.recent)}
     </section>
     ${st.draft ? `<section class="card resume">
       <div><span class="kicker">Unfinished</span><h2>${esc(st.draft.items.map((i) => (find(i.exId) || {}).name).filter(Boolean).slice(0, 2).join(', ') || 'Workout')}</h2></div>
-      <div class="row-btns"><button class="btn red" data-act="resume">Resume</button><button class="btn outline" data-act="discard">Discard</button></div>
+      <div class="row-btns"><button class="btn primary" data-act="resume">Resume</button><button class="btn outline" data-act="discard">Discard</button></div>
     </section>` : ''}
     ${waiting.length ? `<section class="boss-banner">
       <span class="boss-k">Boss waiting</span>
@@ -141,7 +179,7 @@ function viewHome() {
           <span class="tile-t">${esc(names.slice(0, 2).join(', '))}${names.length > 2 ? ` +${names.length - 2}` : ''}</span>
         </button>`;
       }).join('')}
-      <button class="btn ${tpl.length ? 'black' : 'red'}" data-act="new">New session</button>
+      <button class="btn ${tpl.length ? 'black' : 'primary'}" data-act="new">New session</button>
     </section>
     ${last ? `<section class="last">
       <span class="kicker">Last episode</span>
@@ -187,7 +225,7 @@ function viewPicker() {
       <div class="row-btns"><button class="btn black" type="submit">Add</button><button class="btn outline" type="button" data-act="custom-off">Cancel</button></div>
     </form>` : '<button class="link" data-act="custom-on">+ Add your own exercise</button>'}
   </main>
-  <footer class="sticky"><button class="btn red" data-act="start" ${count ? '' : 'disabled'}>${p.mode === 'add' ? `Add ${count || ''} to workout` : `Start Ep. ${nextEp()}${count ? ` · ${count}` : ''}`}</button></footer>`;
+  <footer class="sticky"><button class="btn primary" data-act="start" ${count ? '' : 'disabled'}>${p.mode === 'add' ? `Add ${count || ''} to workout` : `Start Ep. ${nextEp()}${count ? ` · ${count}` : ''}`}</button></footer>`;
 }
 
 function stamp(res, ex, s, g) {
@@ -234,7 +272,7 @@ function viewWorkout() {
         ${it.sets.map((set, j) => {
           const g = gs[j];
           const res = set.done ? compare(ex, set, g) : null;
-          if (set.done) return `<div class="set done">
+          if (set.done) return `<div class="set done ${res || 'logged'}">
             <span class="n">${j + 1}</span>
             <span class="val">${esc(fmtSet(ex, set))}</span>
             <button class="stamp-btn" data-act="undo" data-i="${i}" data-j="${j}" aria-label="Set ${j + 1} done. Tap to edit.">${stamp(res, ex, set, g)}</button>
@@ -258,7 +296,7 @@ function viewWorkout() {
     <button class="btn outline" data-act="add-ex">+ Add exercise</button>
     ${errBox()}
   </main>
-  <footer class="sticky"><button class="btn red" data-act="finish" ${st.busy ? 'disabled' : ''}>${st.busy ? esc(st.busy) : 'Finish episode'}</button></footer>`;
+  <footer class="sticky"><button class="btn primary" data-act="finish" ${st.busy ? 'disabled' : ''}>${st.busy ? esc(st.busy) : 'Finish episode'}</button></footer>`;
 }
 
 function bossBox(i, it, ex, b) {
@@ -300,9 +338,7 @@ function viewEpisode() {
   return `${back ? bar('', { back }) : ''}
   <main class="episode">
     <section class="ep-card ${back ? '' : 'reveal'}">
-      <div class="sun"></div>
-      <span class="kicker">Episode</span>
-      <div class="ep-big">${ep.n}</div>
+      <div class="ep-top"><div><span class="kicker">Episode</span><div class="ep-big">${ep.n}</div></div>${epColumn(ep)}</div>
       <h1 class="ep-title">${esc(ep.title)}</h1>
       <span class="ep-date">${esc(niceDate(ep.date))}</span>
       <div class="stats">
@@ -323,7 +359,7 @@ function viewEpisode() {
         </div>`;
       }).join('')}
     </section>
-    <button class="btn red" data-act="go" data-view="${back || 'home'}">${back ? 'Back' : 'Done'}</button>
+    <button class="btn primary" data-act="go" data-view="${back || 'home'}">${back ? 'Back' : 'Done'}</button>
   </main>`;
 }
 
@@ -346,8 +382,8 @@ function spark(points, w, h) {
   const xy = points.map((p, k) => `${((k / (points.length - 1)) * (w - 8) + 4).toFixed(1)},${(h - 4 - ((p - min) / span) * (h - 8)).toFixed(1)}`);
   const lastPt = xy[xy.length - 1].split(',');
   return `<svg class="spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">
-    <polyline points="${xy.join(' ')}" fill="none" stroke="#141414" stroke-width="2.5" stroke-linejoin="round"></polyline>
-    <circle cx="${lastPt[0]}" cy="${lastPt[1]}" r="4" fill="#D2402C"></circle>
+    <polyline class="ln" points="${xy.join(' ')}"></polyline>
+    <circle class="dot" cx="${lastPt[0]}" cy="${lastPt[1]}" r="4"></circle>
   </svg>`;
 }
 
@@ -392,6 +428,9 @@ function viewSettings() {
       <p class="hint">Everything you log is encrypted on this phone with a key only your passphrase can unlock, before it's saved. The server stores scrambled data it can't read.</p>
     </section>
     <p class="remembered ${session.remembered ? 'ok' : ''}">${session.remembered ? 'This phone stays signed in.' : 'This phone won’t stay signed in. Lock, then sign in with “Stay signed in” ticked.'}</p>
+    <span class="kicker">Appearance</span>
+    <div class="seg" role="group" aria-label="Appearance">${[['auto', 'Auto'], ['light', 'Light'], ['dark', 'Dark']].map(([k, l]) => `<button data-act="theme" data-theme="${k}" class="${theme() === k ? 'on' : ''}" aria-pressed="${theme() === k}">${l}</button>`).join('')}</div>
+    <p class="hint">Auto follows your phone.</p>
     <button class="btn black" data-act="lock">Lock this phone</button>
     <p class="hint">Signs out here and forgets the key. You'll need your passphrase to get back in.</p>
     <button class="btn outline" data-act="export">Download my data</button>
@@ -400,7 +439,7 @@ function viewSettings() {
       <p><b>Delete your account and every episode.</b> This can't be undone.</p>
       <label class="field"><span>Enter your passphrase to confirm</span><input name="oath" type="password" autocomplete="current-password" required></label>
       ${errBox()}
-      <div class="row-btns"><button class="btn red" type="submit" ${st.busy ? 'disabled' : ''}>${st.busy ? esc(st.busy) : 'Delete forever'}</button><button class="btn outline" type="button" data-act="delete-off">Cancel</button></div>
+      <div class="row-btns"><button class="btn primary" type="submit" ${st.busy ? 'disabled' : ''}>${st.busy ? esc(st.busy) : 'Delete forever'}</button><button class="btn outline" type="button" data-act="delete-off">Cancel</button></div>
     </form>` : `<button class="link danger" data-act="delete-on">Delete my account</button>${errBox()}`}
     <p class="hint">Version ${esc(st.version || 'local')}</p>
   </main>`;
@@ -499,7 +538,33 @@ async function enterApp() {
   go('home');
 }
 
+function theme() {
+  try {
+    const t = localStorage.getItem('ta-theme');
+    return t === 'light' || t === 'dark' ? t : 'auto';
+  } catch {
+    return 'auto';
+  }
+}
+
+const darkQuery = matchMedia('(prefers-color-scheme: dark)');
+
+function applyTheme(t) {
+  try {
+    if (t === 'auto') localStorage.removeItem('ta-theme');
+    else localStorage.setItem('ta-theme', t);
+  } catch {}
+  if (t === 'auto') delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = t;
+  const dark = t === 'dark' || (t === 'auto' && darkQuery.matches);
+  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', dark ? '#141518' : '#E7E8EA'));
+}
+
+applyTheme(theme());
+darkQuery.addEventListener('change', () => applyTheme(theme()));
+
 const actions = {
+  'theme': (el) => { applyTheme(el.dataset.theme); render(); },
   'tab': (el) => { st.authTab = el.dataset.tab; st.err = ''; render(); },
   'show-oath': () => { st.showOath = !st.showOath; render(); },
   'go': (el) => go(el.dataset.view),

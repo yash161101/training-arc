@@ -26,11 +26,22 @@ Edit `AGENTS.md`; never replace the link with a copy.
 
 ## Design language
 
-- **Bold graphic** (owner picked, 25 Oct 2026): cream paper `#F1E6D0`, ink `#141414`, red
-  `#D2402C`, ghost blue `#2558C2`. Archivo Black for display (uppercase), Inter for text. Square
-  corners, 2px ink borders, hard offset shadows, a big red sun as the signature shape, stamped
-  results ("Beat +1", "Tied", "Ghost +2", "Boss defeated").
-- **You are red, your ghost is dashed blue.** Everywhere.
+- **Stack** (owner picked from three directions, 26 Oct 2026: "lets do stack"; replaced the
+  cream/red look, which was too close to Vishal's). Every win lays a block. Light: concrete
+  `#E7E8EA`, card `#F5F5F6`, iron ink `#1D1E21`, signal yellow `#FFC21A`, ghost `#5F626A`
+  dashed. Dark: `#141518` / `#1C1E22`, ink `#E7E8EA`, same yellow, ghost `#8D9099`. Space
+  Grotesk for display and text (sentence case, tight tracking), IBM Plex Mono for numbers and
+  labels. Square corners, 2px borders, hard offset shadows. Mockups: the "Training Arc brand
+  directions" design canvas.
+- **Tracking shapes:** set beaten = solid yellow block, tied = half block, ghost won = empty
+  dashed block. Home shows a climb (one column of blocks per recent episode, then a dashed column
+  for today's target). The episode card stacks its blocks into a small tower. Boss = flag.
+- **Icon:** six yellow blocks as three steps on iron, every gap the same (owner: "make the
+  vertical lines on the icon wider, rn its uneven", 26 Oct 2026). `public/icons/`, drawn exactly.
+- **Light / Dark / Auto** in Settings (owner asked for dark mode, 26 Oct 2026; Auto follows the
+  phone and is the default). Stored per phone in localStorage; `js/theme.js` applies it before
+  the page paints.
+- **You are yellow, your ghost is dashed grey.** Everywhere.
 - **Words are plain and to the point.** No poetic or philosophical lines (owner, 24 Oct 2026).
 - **Not wanted:** ink-brush style, dark glowing "system" HUD, hand-drawn characters that look
   goofy, characters acting out each exercise (doesn't scale; owner, 25 Oct 2026).
@@ -115,7 +126,13 @@ Edit `AGENTS.md`; never replace the link with a copy.
 
 ## Latest (start here)
 
-**26 October 2026: remember this phone, made sturdier (branch `remember-device`, PR open).** The
+**26 October 2026: the Stack look and dark mode (branch `stack-brand`).** The owner picked Stack
+and asked for dark/light mode and to deploy it. New colours, fonts, icon, blocks for every set,
+climb on home, tower on the episode card. Checks 43/43 (light and dark both run). The sign-in fix
+(PR #5) was merged first, owner said ship both. Next: world ideas (owner wants "something crazy
+and super unique and cool think beyond just world building", 26 Oct 2026).
+
+**26 October 2026: remember this phone, made sturdier (PR #5, merged and live).** The
 owner was asked to sign in again on iPhone (home screen icon and Safari). Added the fallback,
 storage keep request and Settings line above. Checks 40/40. Next up: a new brand (colours, fonts,
 icon as a simple symbol, plus shapes that show tracking, the way Vishal's app has its own visual
