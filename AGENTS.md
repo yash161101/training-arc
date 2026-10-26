@@ -111,10 +111,10 @@ Edit `AGENTS.md`; never replace the link with a copy.
 
 ## Latest (start here)
 
-**26 October 2026: offline first (OF-01), on branch `offline-sync`, PR open, not merged.** The
+**26 October 2026: offline first (OF-01) is live.** Merged as PR #4 (owner: "merge") and deployed. The
 app opens with no internet, a whole episode can be logged and finished offline, and it syncs by
 itself when the signal comes back. Another phone signing in then sees it. Backups are now daily.
-Checks 37/37 (10 new offline checks). Waiting for the owner to say merge (merging deploys).
+Checks 37/37 (10 new offline checks). Each phone needs one visit with signal to cache the app.
 
 **26 October 2026: auto-deploy is live.** The owner added the Cloudflare secrets (token needed
 Workers Scripts: Edit added). A manual run of Deploy passed checks and deployed. From now on,
