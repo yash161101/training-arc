@@ -104,6 +104,11 @@ Edit `AGENTS.md`; never replace the link with a copy.
 
 ## Latest (start here)
 
+**26 October 2026: auto-deploy is live.** The owner added the Cloudflare secrets (token needed
+Workers Scripts: Edit added). A manual run of Deploy passed checks and deployed. From now on,
+every push to `main` that passes the checks goes live. If a deploy fails, the Wrangler error
+shows as an annotation on the run.
+
 **25 October 2026: on GitHub.** Repo created by the owner; the project was pushed with a clean
 history, plus CI (checks on every push), auto-deploy on `main`, weekly backups, Dependabot, and a
 version line in Settings. Auto-deploy waits for the owner to add `CLOUDFLARE_API_TOKEN` and
