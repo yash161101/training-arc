@@ -7,6 +7,7 @@ import { GROUPS, allExercises, findExercise } from './exercises.js';
 import {
   compare, fmtSet, fmtKg, diffText, bossFor, ghostSets, newItem, scoreDraft, buildEpisode, templates, metric,
 } from './logic.js';
+import { worldState, neglectNote, paintValley, paintClimb, paintDojo, climbState, FORMS, VETERAN } from './world.js';
 
 const app = document.getElementById('app');
 
@@ -144,21 +145,131 @@ function bossLine(ex, b) {
   return `${esc(ex.name)}. Your best: ${esc(fmtSet(ex, b.best))} (Ep. ${b.best.ep})`;
 }
 
-function viewHome() {
-  const s = sum();
-  const tpl = templates(s);
-  const waiting = [];
+const SCENES = {};
+
+function loadScenes() {
+  return Promise.all(['valley', 'climb', 'dojo'].map((n) => fetch(`world/${n}.svg`)
+    .then((r) => (r.ok ? r.text() : ''))
+    .then((t) => { if (t.startsWith('<svg')) SCENES[n] = t; })
+    .catch(() => {})))
+    .then(() => {
+      if (SCENES.climb) {
+        SCENES.climbSteps = (SCENES.climb.match(/class="c-step"/g) || []).length;
+        SCENES.landings = [...SCENES.climb.matchAll(/class="c-land" data-i="(\d+)"/g)].map((m) => +m[1]);
+      }
+      if (['home', 'climb', 'dojo'].includes(st.view)) render();
+    });
+}
+
+function isDark() {
+  const t = document.documentElement.dataset.theme;
+  return t === 'dark' || (!t && darkQuery.matches);
+}
+
+function waitingBosses(s) {
+  const out = [];
   const seen = new Set();
-  for (const t of tpl) for (const id of t.ex) {
+  for (const t of templates(s)) for (const id of t.ex) {
     if (seen.has(id)) continue;
     seen.add(id);
     const ex = find(id);
     const b = ex && bossFor(ex, s);
-    if (b) waiting.push(bossLine(ex, b));
+    if (b) out.push(bossLine(ex, b));
   }
+  return out;
+}
+
+function grounds(s) {
+  const w = worldState(s, find);
+  const note = neglectNote(w);
+  return `<section class="grounds">
+    <div class="grounds-scroll">${SCENES.valley || '<div class="scene-wait"></div>'}</div>
+    <div class="grounds-foot">
+      <span class="kicker">Rank ${w.rank + 1} · ${esc(w.rankName)}</span>
+      <span class="grounds-pl">PL ${w.power.toLocaleString('en-IN')}</span>
+    </div>
+    ${note ? `<p class="grounds-note">${esc(note)}</p>` : ''}
+    <div class="grounds-go"><button class="chip" data-act="go" data-view="dojo">Dojo</button><button class="chip" data-act="go" data-view="climb">Climb</button><span class="hint">Tap a place to go in</span></div>
+  </section>`;
+}
+
+function viewClimb() {
+  const s = sum();
+  const w = worldState(s, find);
+  const total = SCENES.climbSteps || 130;
+  const c = climbState(w, total);
+  const next = (SCENES.landings || []).filter((x) => x > c.laid).sort((a, b) => a - b)[0];
+  const legs = w.exercises.filter((e) => e.place === 'legs');
+  const d = w.neglect.legs;
+  return `${bar('The climb', { back: 'home' })}
+  <main class="place climb-page">
+    <div class="climb-scroll">${SCENES.climb || '<div class="scene-wait tall"></div>'}</div>
+    <section class="place-body">
+      <div class="stat-row"><b class="steps-count">${c.laid} of ${total} steps</b><span>${c.laid >= total ? 'You reached the gate.' : next ? `Next landing in ${next - c.laid} steps` : ''}</span></div>
+      ${d != null && d >= 7 ? `<p class="grounds-note">No legs for ${d} days. Moss is growing on your last ${c.moss} steps.</p>` : ''}
+      <p class="hint">Every leg exercise you finish lays 3 steps. A new best lays one more.</p>
+      ${legs.length ? `<ul class="forms">${legs.map((e) => {
+        const ex = find(e.id);
+        const g = s.last[e.id] && s.last[e.id].sets[0];
+        return `<li><b>${esc(e.name)}</b><span>${g && ex ? `ghost ${esc(fmtSet(ex, g))}` : ''}</span></li>`;
+      }).join('')}</ul>` : '<p class="note">No leg work yet. Your first leg day lays the first steps.</p>'}
+      <button class="btn primary" data-act="leg-day">Start leg day</button>
+    </section>
+  </main>`;
+}
+
+function viewDojo() {
+  const w = worldState(sum(), find);
+  const nr = w.nextRank;
+  return `${bar('The dojo', { back: 'home' })}
+  <main class="place dojo-page">
+    <div class="dojo-scene">${SCENES.dojo || '<div class="scene-wait tall"></div>'}</div>
+    <section class="place-body">
+      <div class="pl-row">
+        <div><span class="kicker">Power level</span><div class="pl-num">${w.power.toLocaleString('en-IN')}</div></div>
+        ${w.powerWeek > 0 ? `<span class="pl-up">+${w.powerWeek.toLocaleString('en-IN')} this week</span>` : ''}
+      </div>
+      <p class="hint">Made from your best lift on every exercise and your good weeks.</p>
+      <div class="rank-box">
+        <span class="kicker">Rank ${w.rank + 1} · ${esc(w.rankName)}</span>
+        <p>${nr ? `${nr.weeks} more good week${nr.weeks === 1 ? '' : 's'} to ${esc(nr.name)}${w.rank + 1 === VETERAN ? '. That adds the second floor.' : '.'}` : 'Top rank.'} A good week has 3 or more sessions.</p>
+      </div>
+      <span class="kicker">Forms</span>
+      ${w.exercises.length ? `<ul class="forms">${w.exercises.map((e) => `<li><b>${esc(e.name)}</b><span>${FORMS[e.form - 1]}${e.toNext ? ` · next in ${e.toNext}` : ''}</span></li>`).join('')}</ul>` : '<p class="note">Train anything and its scroll opens here.</p>'}
+    </section>
+  </main>`;
+}
+
+function decorate(fresh) {
+  const v = app.querySelector('svg.valley');
+  const c = app.querySelector('svg.climb');
+  const d = app.querySelector('svg.dojo');
+  if (!v && !c && !d) return;
+  const s = sum();
+  const w = worldState(s, find);
+  const dark = isDark();
+  if (v) {
+    paintValley(v, w, dark, waitingBosses(s).length > 0);
+    const box = v.parentElement;
+    box.scrollLeft = st.groundsX != null ? st.groundsX : v.getBoundingClientRect().width * 0.56 - box.clientWidth / 2;
+  }
+  if (c) {
+    const r = paintClimb(c, w, dark);
+    const box = c.parentElement;
+    if (fresh || st.climbY == null) box.scrollTop = (r.focusY / 1600) * c.getBoundingClientRect().height - box.clientHeight * 0.55;
+    else box.scrollTop = st.climbY;
+  }
+  if (d) paintDojo(d, w, dark);
+}
+
+function viewHome() {
+  const s = sum();
+  const tpl = templates(s);
+  const waiting = waitingBosses(s);
   const last = s.recent[0];
   return `${bar('', { right: `<span class="bar-right">${syncChip()}<button class="icon-btn" data-act="go" data-view="settings" aria-label="Settings">${ICON.gear}</button></span>` })}
   <main class="home">
+    ${grounds(s)}
     <section class="hero">
       <div class="hero-text"><span class="kicker">Next episode</span><div class="ep-num">Ep. ${nextEp()}</div></div>
       ${climb(s.recent)}
@@ -448,6 +559,7 @@ function viewSettings() {
 const VIEWS = {
   boot: viewBoot, auth: viewAuth, home: viewHome, picker: viewPicker, workout: viewWorkout,
   episode: viewEpisode, history: viewHistory, progress: viewProgress, exercise: viewExercise, settings: viewSettings,
+  climb: viewClimb, dojo: viewDojo,
 };
 
 let lastView = '';
@@ -459,8 +571,13 @@ function render() {
   const keep = a && a.dataset && a.dataset.field
     ? { f: a.dataset.field, i: a.dataset.i, j: a.dataset.j, s: a.selectionStart, e: a.selectionEnd }
     : null;
+  const gs = app.querySelector('.grounds-scroll');
+  if (gs && sameView && gs.querySelector('svg')) st.groundsX = gs.scrollLeft;
+  const cs = app.querySelector('.climb-scroll');
+  st.climbY = cs && sameView && cs.querySelector('svg') ? cs.scrollTop : null;
   app.innerHTML = VIEWS[st.view]();
   lastView = st.view;
+  decorate(!sameView);
   formVals.forEach(([n, val]) => {
     const x = app.querySelector(`form [name="${n}"]`);
     if (!x) return;
@@ -561,10 +678,20 @@ function applyTheme(t) {
 }
 
 applyTheme(theme());
-darkQuery.addEventListener('change', () => applyTheme(theme()));
+darkQuery.addEventListener('change', () => {
+  applyTheme(theme());
+  if (['home', 'climb', 'dojo'].includes(st.view)) render();
+});
 
 const actions = {
   'theme': (el) => { applyTheme(el.dataset.theme); render(); },
+  'leg-day': () => {
+    const s = sum();
+    const t = templates(s, 30).find((r) => r.ex.some((id) => (find(id) || {}).group === 'Legs'));
+    if (t) { startWorkout(t.ex); return; }
+    st.picker = { sel: [], q: '', group: 'Legs', mode: 'new', custom: false };
+    go('picker');
+  },
   'tab': (el) => { st.authTab = el.dataset.tab; st.err = ''; render(); },
   'show-oath': () => { st.showOath = !st.showOath; render(); },
   'go': (el) => go(el.dataset.view),
@@ -770,7 +897,7 @@ function syncChip() {
 }
 
 onSync(() => {
-  if (['home', 'history', 'progress', 'exercise'].includes(st.view)) render();
+  if (['home', 'history', 'progress', 'exercise', 'climb', 'dojo'].includes(st.view)) render();
   else if (st.view === 'episode' && st.episode) {
     const el = app.querySelector('.sync-note');
     if (el) el.outerHTML = syncNote(st.episode);
@@ -792,6 +919,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 setInterval(() => { if (document.visibilityState === 'visible' && session.key) syncNow(); }, 60000);
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+loadScenes();
 
 fetch('version.json', { cache: 'no-store' })
   .then((r) => (r.ok ? r.json() : null))
