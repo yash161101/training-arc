@@ -80,6 +80,7 @@ mountain idea.
 
 ## Change log
 
+- **26 October 2026:** Training Grounds art direction set: side view, richly illustrated, our own (owner: "Side views", "Rich illustrations, super rich", "make it our own"). Block-cube version rejected (owner: "thats just a bunch on blocks you're making it look like tetris"). Rebuilt as one valley with depth, one scale, paths and a stream. Rule: nothing floats; objects on the hill are placed on its measured surface and the build refuses anything hovering (owner asked for physics like Vishal's: "nothing is going in directions or ways it isn't supposed to"). Tap to explore agreed (owner: "tapping on the elements to go into them"): the valley shows each place's base, tapping opens it. First two inside views drawn: the climb (hill, legs) and the dojo (rank, power level, forms; replaces the You screen) (owner: "do both dojo and hill").
 - **26 October 2026:** TG-01 Training Grounds agreed as the world (sibling to Vishal's village: his is where you live, yours is where you train). Anime feel from Naruto, Demon Slayer, DBZ, without their names or art. Block silhouettes rejected (owner: "sounds silly").
 - **26 October 2026:** BR-01 (Stack brand) and DM-01 (dark mode) agreed and built.
 - **26 October 2026:** OF-01 agreed and built: works offline, syncs on its own, a sync chip on
