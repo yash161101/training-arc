@@ -83,10 +83,15 @@ Edit `AGENTS.md`; never replace the link with a copy.
   (server count + 1), so two phones offline at once never clash. Sync runs on open, on coming back
   online, when the app comes to the front, and every minute. Home shows a chip: Synced, Syncing,
   Offline · N, Waiting · N. Lock tries to sync first and warns if anything would be lost.
-- **Training Grounds (TG-01):** home opens on an illustrated valley (swipe sideways). Tap the
-  dojo or the hill to go inside. Everything is worked out from the summary on the phone
+- **Training Grounds (TG-01):** home opens on an illustrated valley (swipe sideways). Tap a
+  place (or the chips under it) to go inside: dojo, climb (legs), cliff (pull), yard (push),
+  forge (arms), boulders (bosses). Everything is worked out from the summary on the phone
   (`js/world.js`), nothing new is stored:
   - Places: Back = cliff and rope, Chest and Shoulders = posts, Arms = forge, Legs = hill.
+  - Inside, each place fills up: climb 130 steps (3 per leg exercise, +1 per new best), cliff
+    100 grips (3 per pull exercise, +1), yard 40 rope wraps on 8 posts (1 per push exercise, +1),
+    forge 24 pieces on the rack (1 per arm exercise, +1), boulder garden 12 spots (one split
+    boulder per boss beaten, carved with its episode; a waiting boss stands whole with a flag).
   - Steps on the climb: each leg exercise in a session lays 3, a new best lays 1 more (130 to the
     gate). The next steps show dashed.
   - Neglect (only for groups you have trained): 7+ days without legs = moss on the stairs (and on
@@ -97,7 +102,21 @@ Edit `AGENTS.md`; never replace the link with a copy.
   - Power level: 10 x (best estimated 1-rep max per weighted exercise + 4 x best reps per
     bodyweight exercise) + 50 per good week. Forms: 1 + one per 3 sessions of an exercise, max 5.
   - Each boss beaten leaves a split boulder (two shown); a waiting boss shows as a whole one.
-  - Night follows dark mode.
+  - The sky follows the user's real city, not dark mode (owner: "the day and night and other
+    easter eggs thing must happen with the city they are in not the dark and light mode",
+    26 Oct 2026). `/api/sky` returns the rough city from Cloudflare (`request.cf`, rounded,
+    never stored) and current weather from Open-Meteo (free, no key, cached 30 minutes per
+    area). `js/sky.js` works out sunrise and sunset there: day, dawn and dusk glow, night with
+    the real moon phase. Weather: clouds, rain, storm flashes, fog, snow. Festivals (India):
+    Diwali diyas and lights (dates to 2030 in `sky.js`), Holi colour, New Year fireworks.
+    Seasons: cherry blossom in spring, green in summer and monsoon (greener grass), orange
+    leaves in autumn. Without a location it uses the phone clock with 6:15 and 18:30.
+  - Easter eggs (owner picked all, 26 Oct 2026): power level over 9000 (one-off stamp and a black
+    9000 banner for good), a golden koi in the stream after a perfect episode (every set beat
+    the ghost), a sunrise-pink sky after a 4 to 6am session, an owl on the gate at night after a
+    late session, fireworks on every 100th episode, a cat asleep on the dojo steps after a week
+    away, and tapping the dummy (it wobbles; five taps knock it over). Recent episodes now keep
+    their start time and whether they were perfect.
   - It moves (owner: "why is everything static. Where's the movement in the water the birds
     everything", 26 Oct 2026): the waterfall pours, the stream ripples, mist, drifting clouds,
     birds, forge smoke, fluttering banner and flags, swaying lanterns and big tree, falling
@@ -122,8 +141,9 @@ Edit `AGENTS.md`; never replace the link with a copy.
 - `public/js/app.js`: screens and actions. `logic.js`: ghost, boss, episode rules.
   `store.js`: saving and loading (encrypt, outbox, sync, compare-and-swap, drafts). `sw.js`: offline cache. `crypto.js`: the oath and
   encryption. `exercises.js`: the exercise library. `keystore.js`: IndexedDB. `api.js`: fetch.
-  `world.js`: the Training Grounds state and painting.
-- `public/world/`: the three scenes (valley, climb, dojo) as SVG with named parts the app switches
+  `world.js`: the Training Grounds state and painting. `sky.js`: sun, moon, weather, festivals,
+  seasons.
+- `public/world/`: the seven scenes (valley, climb, dojo, cliff, yard, forge, boulders) as SVG with named parts the app switches
   on and off. Made by `tools/world/make.sh` (Python scripts; they refuse anything that would float
   above a surface). Edit the scripts, then rerun `make.sh`; never hand-edit the SVGs.
 - `checks/e2e.mjs`: the full browser check (see README).
@@ -149,6 +169,12 @@ Edit `AGENTS.md`; never replace the link with a copy.
 - **One idea per commit.**
 
 ## Latest (start here)
+
+**26 October 2026: the whole world (branch `grounds-world`, PR open).** Owner asked for the other
+inside scenes, the sky to follow the real city, cleaner roads, and picked every real-world event
+and easter egg. All built: cliff, yard, forge and boulder garden; city sun and moon, weather,
+festivals and seasons; the easter eggs; tapered roads. Checks 63/63 (one pretends to be Mumbai on
+Diwali night in the rain).
 
 **26 October 2026: Training Grounds are live (PR #7, owner: "Merge").** Owner: "Build
 now". The valley on home, inside the dojo (power level, rank, forms) and the climb (legs), all

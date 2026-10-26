@@ -7,7 +7,8 @@ import { GROUPS, allExercises, findExercise } from './exercises.js';
 import {
   compare, fmtSet, fmtKg, diffText, bossFor, ghostSets, newItem, scoreDraft, buildEpisode, templates, metric,
 } from './logic.js';
-import { worldState, neglectNote, paintValley, paintClimb, paintDojo, climbState, FORMS, VETERAN } from './world.js';
+import { worldState, neglectNote, paintValley, paintClimb, paintDojo, paintPlace, placeState, climbState, FORMS, VETERAN } from './world.js';
+import { refreshSky, skyNow } from './sky.js';
 
 const app = document.getElementById('app');
 
@@ -148,22 +149,57 @@ function bossLine(ex, b) {
 const SCENES = {};
 
 function loadScenes() {
-  return Promise.all(['valley', 'climb', 'dojo'].map((n) => fetch(`world/${n}.svg`)
+  return Promise.all(['valley', 'climb', 'dojo', 'cliff', 'yard', 'forge', 'boulders'].map((n) => fetch(`world/${n}.svg`)
     .then((r) => (r.ok ? r.text() : ''))
     .then((t) => { if (t.startsWith('<svg')) SCENES[n] = t; })
     .catch(() => {})))
     .then(() => {
+      for (const n of Object.keys(PLACES)) if (SCENES[n]) SCENES[n + 'Units'] = (SCENES[n].match(/class="u"/g) || []).length;
       if (SCENES.climb) {
         SCENES.climbSteps = (SCENES.climb.match(/class="c-step"/g) || []).length;
         SCENES.landings = [...SCENES.climb.matchAll(/class="c-land" data-i="(\d+)"/g)].map((m) => +m[1]);
       }
-      if (['home', 'climb', 'dojo'].includes(st.view)) render();
+      if (SCENE_VIEWS.includes(st.view)) render();
     });
 }
 
-function isDark() {
-  const t = document.documentElement.dataset.theme;
-  return t === 'dark' || (!t && darkQuery.matches);
+const SCENE_VIEWS = ['home', 'climb', 'dojo', 'cliff', 'yard', 'forge', 'boulders'];
+
+const PLACES = {
+  cliff: { title: 'The cliff', key: 'pull', noun: 'grips', groups: ['Back'], how: 'Every pull exercise you finish sets 3 grips on the rope. A new best sets one more.', btn: 'Start pull day', tall: true },
+  yard: { title: 'The yard', key: 'push', noun: 'wraps', groups: ['Chest', 'Shoulders'], how: 'Every push exercise you finish wraps a band on a post. A new best wraps another.', btn: 'Start push day' },
+  forge: { title: 'The forge', key: 'arms', noun: 'pieces', groups: ['Arms'], how: 'Every arm exercise you finish forges a piece for the rack. A new best forges another.', btn: 'Start arm day' },
+  boulders: { title: 'Boss boulders', key: 'boulders', noun: 'bosses', groups: null, how: 'Every boss you beat splits a boulder, carved with the episode. A waiting boss stands whole with a flag.' },
+};
+
+function viewPlace(name) {
+  const cfg = PLACES[name];
+  const s = sum();
+  const w = worldState(s, find);
+  const total = SCENES[name + 'Units'] || 0;
+  const waiting = waitingBosses(s);
+  const c = placeState(w, cfg.key, total, waiting.length > 0);
+  const exs = cfg.groups ? w.exercises.filter((e) => cfg.groups.includes((find(e.id) || {}).group)) : [];
+  const d = cfg.groups ? w.neglect[cfg.key] : null;
+  const note = d != null && d >= 7 ? neglectNote({ neglect: { [cfg.key]: d } }) : '';
+  return `${bar(cfg.title, { back: 'home' })}
+  <main class="place place-page-${name}">
+    <div class="${cfg.tall ? 'climb-scroll' : 'place-scene'}">${SCENES[name] || '<div class="scene-wait tall"></div>'}</div>
+    <section class="place-body">
+      <div class="stat-row"><b class="units-count">${c.laid} of ${total} ${cfg.noun}</b>${name === 'boulders' && waiting.length ? '<span>A boss is waiting</span>' : ''}</div>
+      ${note ? `<p class="grounds-note">${esc(note)}</p>` : ''}
+      <p class="hint">${cfg.how}</p>
+      ${name === 'boulders'
+        ? (w.bosses.length ? `<ul class="forms">${w.bosses.slice().reverse().map((b) => `<li><b>${esc(b.what)}</b><span>Ep. ${b.n} · ${esc(niceDate(b.date))}</span></li>`).join('')}</ul>` : '<p class="note">No bosses beaten yet. A boss appears when you get close to your best.</p>')
+          + (waiting.length ? `<div class="boss-banner"><span class="boss-k">Boss waiting</span>${waiting.slice(0, 2).map((x) => `<p>${x}</p>`).join('')}</div>` : '')
+        : (exs.length ? `<ul class="forms">${exs.map((e) => {
+          const ex = find(e.id);
+          const g = s.last[e.id] && s.last[e.id].sets[0];
+          return `<li><b>${esc(e.name)}</b><span>${g && ex ? `ghost ${esc(fmtSet(ex, g))}` : ''}</span></li>`;
+        }).join('')}</ul>` : '<p class="note">Nothing here yet. Your first session builds it.</p>')
+          + `<button class="btn primary" data-act="place-day" data-groups="${cfg.groups.join(',')}">${cfg.btn}</button>`}
+    </section>
+  </main>`;
 }
 
 function waitingBosses(s) {
@@ -189,7 +225,8 @@ function grounds(s) {
       <span class="grounds-pl">PL ${w.power.toLocaleString('en-IN')}</span>
     </div>
     ${note ? `<p class="grounds-note">${esc(note)}</p>` : ''}
-    <div class="grounds-go"><button class="chip" data-act="go" data-view="dojo">Dojo</button><button class="chip" data-act="go" data-view="climb">Climb</button><span class="hint">Tap a place to go in</span></div>
+    <div class="grounds-go">${[['dojo', 'Dojo'], ['climb', 'Climb'], ['cliff', 'Cliff'], ['yard', 'Yard'], ['forge', 'Forge'], ['boulders', 'Boulders']].map(([v, l]) => `<button class="chip" data-act="go" data-view="${v}">${l}</button>`).join('')}</div>
+    <p class="hint">Tap a place in the grounds to go in.${skyLine()}</p>
   </section>`;
 }
 
@@ -240,16 +277,30 @@ function viewDojo() {
   </main>`;
 }
 
+function skyLine() {
+  const k = skyNow();
+  const bits = [];
+  if (k.city) bits.push(k.city);
+  if (k.festival) bits.push({ diwali: 'Happy Diwali', holi: 'Happy Holi', newyear: 'Happy New Year' }[k.festival]);
+  return bits.length ? ' ' + esc(bits.join(' · ')) : '';
+}
+
 function decorate(fresh) {
   const v = app.querySelector('svg.valley');
   const c = app.querySelector('svg.climb');
   const d = app.querySelector('svg.dojo');
-  if (!v && !c && !d) return;
+  const p = app.querySelector('svg[class*="place-"]');
+  if (!v && !c && !d && !p) return;
   const s = sum();
   const w = worldState(s, find);
-  const dark = isDark();
+  const dark = skyNow();
   if (v) {
     paintValley(v, w, dark, waitingBosses(s).length > 0);
+    if (w.eggs.over9000) {
+      let seen = false;
+      try { seen = localStorage.getItem('ta-9000') === '1'; localStorage.setItem('ta-9000', '1'); } catch {}
+      if (!seen) stampOverlay('Power level over 9000');
+    }
     const box = v.parentElement;
     box.scrollLeft = st.groundsX != null ? st.groundsX : v.getBoundingClientRect().width * 0.56 - box.clientWidth / 2;
   }
@@ -260,6 +311,15 @@ function decorate(fresh) {
     else box.scrollTop = st.climbY;
   }
   if (d) paintDojo(d, w, dark);
+  if (p) {
+    const name = [...p.classList].find((x) => x.startsWith('place-')).slice(6);
+    const r = paintPlace(p, w, dark, PLACES[name].key, waitingBosses(s).length > 0);
+    const box = p.parentElement;
+    if (box.classList.contains('climb-scroll') && r.focusY != null) {
+      if (fresh || st.climbY == null) box.scrollTop = (r.focusY / 1600) * p.getBoundingClientRect().height - box.clientHeight * 0.55;
+      else box.scrollTop = st.climbY;
+    }
+  }
 }
 
 function viewHome() {
@@ -560,6 +620,7 @@ const VIEWS = {
   boot: viewBoot, auth: viewAuth, home: viewHome, picker: viewPicker, workout: viewWorkout,
   episode: viewEpisode, history: viewHistory, progress: viewProgress, exercise: viewExercise, settings: viewSettings,
   climb: viewClimb, dojo: viewDojo,
+  cliff: () => viewPlace('cliff'), yard: () => viewPlace('yard'), forge: () => viewPlace('forge'), boulders: () => viewPlace('boulders'),
 };
 
 let lastView = '';
@@ -649,6 +710,7 @@ async function enterApp() {
   try {
     await loadSummary();
     st.draft = await loadDraft();
+    skyTick();
   } catch (e) {
     st.err = e.message;
   }
@@ -678,13 +740,32 @@ function applyTheme(t) {
 }
 
 applyTheme(theme());
-darkQuery.addEventListener('change', () => {
-  applyTheme(theme());
-  if (['home', 'climb', 'dojo'].includes(st.view)) render();
-});
+darkQuery.addEventListener('change', () => applyTheme(theme()));
 
 const actions = {
   'theme': (el) => { applyTheme(el.dataset.theme); render(); },
+  'place-day': (el) => {
+    const groups = (el.dataset.groups || '').split(',');
+    const s = sum();
+    const t = templates(s, 30).find((r) => r.ex.some((id) => groups.includes((find(id) || {}).group)));
+    if (t) { startWorkout(t.ex); return; }
+    st.picker = { sel: [], q: '', group: groups[0], mode: 'new', custom: false };
+    go('picker');
+  },
+  'poke': () => {
+    const g = app.querySelector('#w-dummy');
+    if (!g || g.classList.contains('down')) return;
+    st.pokes = (st.pokes || 0) + 1;
+    if (st.pokes >= 5) {
+      st.pokes = 0;
+      g.classList.add('down');
+      setTimeout(() => g.classList.remove('down'), 4000);
+      return;
+    }
+    g.classList.remove('wobble');
+    void g.getBoundingClientRect();
+    g.classList.add('wobble');
+  },
   'leg-day': () => {
     const s = sum();
     const t = templates(s, 30).find((r) => r.ex.some((id) => (find(id) || {}).group === 'Legs'));
@@ -897,7 +978,7 @@ function syncChip() {
 }
 
 onSync(() => {
-  if (['home', 'history', 'progress', 'exercise', 'climb', 'dojo'].includes(st.view)) render();
+  if (['history', 'progress', 'exercise', ...SCENE_VIEWS].includes(st.view)) render();
   else if (st.view === 'episode' && st.episode) {
     const el = app.querySelector('.sync-note');
     if (el) el.outerHTML = syncNote(st.episode);
@@ -920,6 +1001,8 @@ setInterval(() => { if (document.visibilityState === 'visible' && session.key) s
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 loadScenes();
+function skyTick() { if (session.key) refreshSky().then(() => { if (SCENE_VIEWS.includes(st.view) && session.key) render(); }); }
+setInterval(() => { if (document.visibilityState === 'visible' && SCENE_VIEWS.includes(st.view) && session.key) skyTick(); }, 5 * 60000);
 
 fetch('version.json', { cache: 'no-store' })
   .then((r) => (r.ok ? r.json() : null))

@@ -189,6 +189,49 @@ async function me(req, env) {
   return json({ userId: user.id, name: user.name });
 }
 
+async function sky(req, env) {
+  await session(req, env);
+  const cf = req.cf || {};
+  const lat = Number(cf.latitude);
+  const lon = Number(cf.longitude);
+  const has = Number.isFinite(lat) && Number.isFinite(lon) && (lat !== 0 || lon !== 0);
+  const out = {
+    city: typeof cf.city === 'string' ? cf.city : null,
+    country: typeof cf.country === 'string' ? cf.country : null,
+    lat: has ? Math.round(lat * 10) / 10 : null,
+    lon: has ? Math.round(lon * 10) / 10 : null,
+    weather: null,
+  };
+  if (has) {
+    const la = Math.round(lat * 2) / 2;
+    const lo = Math.round(lon * 2) / 2;
+    const key = new Request(`https://sky.cache/v1/${la},${lo}`);
+    let hit = null;
+    try {
+      hit = await caches.default.match(key);
+    } catch {}
+    if (!hit) {
+      try {
+        const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&current=weather_code,cloud_cover,precipitation`, { signal: AbortSignal.timeout(4000) });
+        if (r.ok) {
+          const j = await r.json();
+          const c = j.current || {};
+          hit = new Response(JSON.stringify({ code: c.weather_code, cloud: c.cloud_cover, rain: c.precipitation }), { headers: { 'content-type': 'application/json', 'cache-control': 'max-age=1800' } });
+          try {
+            await caches.default.put(key, hit.clone());
+          } catch {}
+        }
+      } catch {}
+    }
+    if (hit) {
+      try {
+        out.weather = await hit.json();
+      } catch {}
+    }
+  }
+  return json(out);
+}
+
 async function logout(req, env) {
   try {
     const s = await session(req, env);
@@ -263,6 +306,7 @@ async function route(req, env, url) {
   if (p === '/api/login' && m === 'POST') return login(req, env, ip);
   if (p === '/api/logout' && m === 'POST') return logout(req, env);
   if (p === '/api/me' && m === 'GET') return me(req, env);
+  if (p === '/api/sky' && m === 'GET') return sky(req, env);
   if (p === '/api/account/delete' && m === 'POST') return deleteAccount(req, env);
   if (p === '/api/docs' && m === 'GET') return listDocs(req, env, url);
   const d = /^\/api\/doc\/([^/]+)$/.exec(p);

@@ -1,9 +1,9 @@
-const CACHE = 'training-arc-shell-v4';
+const CACHE = 'training-arc-shell-v5';
 const SHELL = [
   './',
   'style.css',
   'manifest.webmanifest',
-  'js/app.js', 'js/api.js', 'js/crypto.js', 'js/exercises.js', 'js/keystore.js', 'js/logic.js', 'js/store.js', 'js/world.js', 'world/valley.svg', 'world/climb.svg', 'world/dojo.svg',
+  'js/app.js', 'js/api.js', 'js/crypto.js', 'js/exercises.js', 'js/keystore.js', 'js/logic.js', 'js/store.js', 'js/world.js', 'js/sky.js', 'world/cliff.svg', 'world/yard.svg', 'world/forge.svg', 'world/boulders.svg', 'world/valley.svg', 'world/climb.svg', 'world/dojo.svg',
   'fonts/space-grotesk.woff2', 'fonts/plex-mono-500.woff2', 'fonts/plex-mono-600.woff2', 'js/theme.js', 'icons/icon.svg',
   'icons/icon-192.png', 'icons/apple-touch-icon.png',
 ];
