@@ -145,7 +145,7 @@ Edit `AGENTS.md`; never replace the link with a copy.
 
 ## Latest (start here)
 
-**26 October 2026: Training Grounds built (branch `grounds-build`, PR open).** Owner: "Build
+**26 October 2026: Training Grounds are live (PR #7, owner: "Merge").** Owner: "Build
 now". The valley on home, inside the dojo (power level, rank, forms) and the climb (legs), all
 driven by real data, night in dark mode, cached offline. Checks 52/52 in light and dark. The
 other four inside views (cliff, posts, forge, boulders) are not drawn yet; their places show in
