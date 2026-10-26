@@ -35,6 +35,8 @@ condition to revisit), **Rejected** (with the reason).
 
 | ID | Idea | Status |
 |---|---|---|
+| `RW-01` | The grounds follow the real world in your city: sun, moon, weather, festivals, seasons | **Agreed** 26 Oct 2026 (owner picked all four). Built 26 Oct 2026 |
+| `EG-01` | Easter eggs: 9000, koi, time-of-day visitors, little touches | **Agreed** 26 Oct 2026 (owner picked all four). Built 26 Oct 2026 |
 | `TG-01` | Training Grounds: a place outside the village, built from your won blocks. Each muscle group builds its own spot (push wall, pull tower, leg stairs, arm forge), neglect grows grass over it, ghost blocks show as dashed outlines, bosses become pillars, sky follows light/dark. Plus a power level (passing 9000 is an easter egg), forms per exercise, and ranks from consistency | **Agreed** 26 Oct 2026, valley + dojo + climb built 26 Oct 2026 (owner: "TRAINING GROUND", on neglect showing: "NO I LOVE IT", on power level, forms and ranks: "LOVE ALL OF IT", "THis is it"). Mockups next |
 | `BR-01` | Stack brand: blocks as the tracking shape, yellow on concrete, new icon | **Agreed** 26 Oct 2026 (owner: "lets do stack"). Built 26 Oct 2026 |
 | `DM-01` | Dark and light mode, Auto follows the phone | **Agreed** 26 Oct 2026 (owner: "add a dark/light mode thing to it, deploy it"). Built 26 Oct 2026 |
