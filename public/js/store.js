@@ -2,13 +2,35 @@ import { api, ApiError } from './api.js';
 import { seal, unseal, deriveFromOath, createMaster, unwrapMaster, toB64, randomBytes } from './crypto.js';
 import { kvGet, kvSet, kvDel, kvClear } from './keystore.js';
 import { EMPTY_SUMMARY, applyEpisode } from './logic.js';
+import { findExercise } from './exercises.js';
 
-const S = { userId: null, name: null, key: null, summary: null, summaryRev: 0, draftRev: 0 };
+const S = {
+  userId: null, name: null, key: null,
+  base: null, baseRev: 0, outbox: [], summary: null,
+  draftRev: 0, sync: { state: 'idle', pending: 0 },
+};
 
 export const session = S;
 
+const listeners = new Set();
+export function onSync(fn) {
+  listeners.add(fn);
+  return () => listeners.delete(fn);
+}
+
+function setSync(state) {
+  S.sync = { state, pending: S.outbox.length };
+  listeners.forEach((fn) => fn(S.sync, S.summary));
+}
+
 const aad = (id) => `${S.userId}:${id}`;
 const epId = (n) => `ep-${String(n).padStart(6, '0')}`;
+const newEpId = () => `ep-${Date.now().toString(36)}-${toB64(randomBytes(6)).replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 6)}`;
+const clone = (x) => JSON.parse(JSON.stringify(x));
+
+function finder(summary) {
+  return (id) => findExercise(id, (summary && summary.custom) || []);
+}
 
 async function encode(id, value) {
   return seal(S.key, aad(id), value);
@@ -16,6 +38,24 @@ async function encode(id, value) {
 
 async function decode(id, doc) {
   return unseal(S.key, aad(id), doc.iv, doc.data);
+}
+
+async function cacheSet(name, docId, value) {
+  await kvSet(`${name}:${S.userId}`, await encode(docId, value));
+}
+
+async function cacheGet(name, docId) {
+  const sealed = await kvGet(`${name}:${S.userId}`);
+  if (!sealed) return null;
+  try {
+    return await unseal(S.key, aad(docId), sealed.iv, sealed.data);
+  } catch {
+    return null;
+  }
+}
+
+function reset() {
+  Object.assign(S, { userId: null, name: null, key: null, base: null, baseRev: 0, outbox: [], summary: null, draftRev: 0 });
 }
 
 async function remember(keep) {
@@ -49,7 +89,8 @@ export async function join(name, oath, keep, invite) {
   const { kek, authKey } = await deriveFromOath(oath, salt);
   const { master, wrappedKey, wrapIv } = await createMaster(kek);
   const r = await api('/api/signup', { method: 'POST', body: { name, salt, authKey, wrappedKey, wrapIv, invite } });
-  Object.assign(S, { userId: r.userId, name: r.name, key: master, summary: null, summaryRev: 0, draftRev: 0 });
+  reset();
+  Object.assign(S, { userId: r.userId, name: r.name, key: master });
   await remember(keep);
 }
 
@@ -58,8 +99,13 @@ export async function enter(name, oath, keep) {
   const { kek, authKey } = await deriveFromOath(oath, salt);
   const r = await api('/api/login', { method: 'POST', body: { name, authKey } });
   const key = await unwrapMaster(kek, r.wrappedKey, r.wrapIv);
-  Object.assign(S, { userId: r.userId, name: r.name, key, summary: null, summaryRev: 0, draftRev: 0 });
+  reset();
+  Object.assign(S, { userId: r.userId, name: r.name, key });
   await remember(keep);
+}
+
+export function pendingCount() {
+  return S.outbox.length;
 }
 
 export async function lock() {
@@ -67,7 +113,7 @@ export async function lock() {
     await api('/api/logout', { method: 'POST', body: {} });
   } catch {}
   await kvClear();
-  Object.assign(S, { userId: null, name: null, key: null, summary: null, summaryRev: 0, draftRev: 0 });
+  reset();
 }
 
 export async function destroy(oath) {
@@ -75,96 +121,206 @@ export async function destroy(oath) {
   const { authKey } = await deriveFromOath(oath, salt);
   await api('/api/account/delete', { method: 'POST', body: { authKey } });
   await kvClear();
-  Object.assign(S, { userId: null, name: null, key: null, summary: null });
+  reset();
+}
+
+function derive() {
+  let s = clone(S.base || EMPTY_SUMMARY());
+  for (const op of S.outbox) {
+    if (op.kind === 'episode') s = applyEpisode(s, { ...op.ep, n: s.episodes + 1 }, finder(s));
+    if (op.kind === 'custom' && !s.custom.some((c) => c.id === op.ex.id)) s.custom = [...s.custom, op.ex];
+  }
+  S.summary = s;
+  return s;
+}
+
+async function saveOutbox() {
+  await cacheSet('outbox', 'outbox', S.outbox);
+}
+
+async function fetchBase() {
+  try {
+    const doc = await api('/api/doc/summary');
+    S.base = { ...EMPTY_SUMMARY(), ...(await decode('summary', doc)) };
+    S.baseRev = doc.rev;
+  } catch (e) {
+    if (e.status !== 404) throw e;
+    S.base = EMPTY_SUMMARY();
+    S.baseRev = 0;
+  }
+  await cacheSet('summary', 'summary', { s: S.base, rev: S.baseRev });
 }
 
 export async function loadSummary() {
-  try {
-    const doc = await api('/api/doc/summary');
-    S.summary = { ...EMPTY_SUMMARY(), ...(await decode('summary', doc)) };
-    S.summaryRev = doc.rev;
-    await kvSet('summary:' + S.userId, await encode('summary', { s: S.summary, rev: S.summaryRev }));
-  } catch (e) {
-    if (e.status === 404) {
-      S.summary = EMPTY_SUMMARY();
-      S.summaryRev = 0;
-    } else {
-      const cached = await kvGet('summary:' + S.userId);
-      if (!cached) throw e;
-      const c = await unseal(S.key, aad('summary'), cached.iv, cached.data);
-      S.summary = c.s;
-      S.summaryRev = c.rev;
-      S.offline = true;
-    }
+  const cached = await cacheGet('summary', 'summary');
+  if (cached) {
+    S.base = { ...EMPTY_SUMMARY(), ...cached.s };
+    S.baseRev = cached.rev;
   }
+  S.outbox = (await cacheGet('outbox', 'outbox')) || [];
+  try {
+    await fetchBase();
+    S.offline = false;
+  } catch (e) {
+    if (!cached) S.base = EMPTY_SUMMARY();
+    S.offline = true;
+  }
+  derive();
+  setSync(S.outbox.length ? (S.offline ? 'offline' : 'pending') : (S.offline ? 'offline' : 'synced'));
+  syncSoon(0);
   return S.summary;
 }
 
-async function updateSummary(mutate) {
-  for (let i = 0; i < 4; i++) {
-    const next = mutate(S.summary);
-    const body = { rev: S.summaryRev, ...(await encode('summary', next)) };
-    try {
-      const r = await api('/api/doc/summary', { method: 'PUT', body });
-      S.summary = next;
-      S.summaryRev = r.rev;
-      await kvSet('summary:' + S.userId, await encode('summary', { s: next, rev: r.rev }));
-      return next;
-    } catch (e) {
-      if (e.status !== 409) throw e;
-      const cur = e.data && e.data.current;
-      if (cur) {
-        S.summary = { ...EMPTY_SUMMARY(), ...(await decode('summary', cur)) };
-        S.summaryRev = cur.rev;
-      } else {
-        S.summary = EMPTY_SUMMARY();
-        S.summaryRev = 0;
-      }
-    }
-  }
-  throw new ApiError(409, 'Could not save. Try again.');
+let syncing = null;
+let syncTimer = null;
+
+export function syncSoon(ms = 400) {
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => { syncNow(); }, ms);
 }
 
-export async function saveEpisode(build, find) {
-  for (let i = 0; i < 4; i++) {
-    const n = S.summary.episodes + 1;
-    const ep = build(n);
+export function syncNow() {
+  if (!S.key) return Promise.resolve();
+  if (!syncing) syncing = runSync().finally(() => { syncing = null; });
+  return syncing;
+}
+
+async function putSummary(next) {
+  const r = await api('/api/doc/summary', { method: 'PUT', body: { rev: S.baseRev, ...(await encode('summary', next)) } });
+  S.base = next;
+  S.baseRev = r.rev;
+  await cacheSet('summary', 'summary', { s: next, rev: r.rev });
+}
+
+async function pushEpisode(op) {
+  for (let tries = 0; tries < 6; tries++) {
+    await fetchBase();
+    const ep = { ...op.ep, n: S.base.episodes + 1 };
     try {
-      await api('/api/doc/' + epId(n), { method: 'PUT', body: { rev: 0, ...(await encode(epId(n), ep)) } });
+      const r = await api('/api/doc/' + op.id, { method: 'PUT', body: { rev: op.rev || 0, ...(await encode(op.id, ep)) } });
+      op.rev = r.rev;
     } catch (e) {
       if (e.status !== 409) throw e;
-      await loadSummary();
-      S.summary.episodes = Math.max(S.summary.episodes, n);
+      op.rev = e.data && e.data.current ? e.data.current.rev : 0;
       continue;
     }
-    await updateSummary((s) => applyEpisode(s, ep, find));
-    return ep;
+    try {
+      await putSummary(applyEpisode(S.base, ep, finder(S.base)));
+      await cacheSet('ep:' + op.id, op.id, ep);
+      return;
+    } catch (e) {
+      if (e.status !== 409) throw e;
+    }
   }
-  throw new ApiError(409, 'Could not save. Try again.');
+  throw new ApiError(409, 'Kept changing elsewhere. Will retry.');
+}
+
+async function pushCustom(op) {
+  for (let tries = 0; tries < 6; tries++) {
+    await fetchBase();
+    if (S.base.custom.some((c) => c.id === op.ex.id)) return;
+    try {
+      await putSummary({ ...S.base, custom: [...S.base.custom, op.ex] });
+      return;
+    } catch (e) {
+      if (e.status !== 409) throw e;
+    }
+  }
+  throw new ApiError(409, 'Kept changing elsewhere. Will retry.');
+}
+
+async function flushDraftDelete() {
+  if (!(await kvGet('draftdel:' + S.userId))) return;
+  await api('/api/doc/draft', { method: 'DELETE' });
+  await kvDel('draftdel:' + S.userId);
+}
+
+async function runSync() {
+  try {
+    await flushDraftDelete();
+  } catch {}
+  if (!S.outbox.length) {
+    try {
+      const before = S.baseRev;
+      await fetchBase();
+      S.offline = false;
+      derive();
+      setSync('synced');
+      return before !== S.baseRev;
+    } catch {
+      S.offline = true;
+      setSync('offline');
+      return false;
+    }
+  }
+  setSync('syncing');
+  try {
+    while (S.outbox.length) {
+      const op = S.outbox[0];
+      if (op.kind === 'episode') await pushEpisode(op);
+      if (op.kind === 'custom') await pushCustom(op);
+      S.outbox.shift();
+      await saveOutbox();
+    }
+    S.offline = false;
+    derive();
+    setSync('synced');
+    return true;
+  } catch (e) {
+    S.offline = e.status === 0;
+    await saveOutbox();
+    derive();
+    setSync(e.status === 0 ? 'offline' : 'error');
+    return false;
+  }
+}
+
+export async function saveEpisode(build) {
+  const id = newEpId();
+  const ep = { ...build(S.summary.episodes + 1), id };
+  S.outbox.push({ kind: 'episode', id, ep, rev: 0 });
+  await saveOutbox();
+  await cacheSet('ep:' + id, id, ep);
+  derive();
+  setSync('pending');
+  syncSoon(0);
+  return ep;
 }
 
 export async function addCustom(ex) {
-  return updateSummary((s) => ({ ...s, custom: [...(s.custom || []), ex] }));
+  S.outbox.push({ kind: 'custom', ex });
+  await saveOutbox();
+  derive();
+  setSync('pending');
+  syncSoon(0);
+  return S.summary;
 }
 
 export async function getEpisode(n) {
-  const doc = await api('/api/doc/' + epId(n));
-  return decode(epId(n), doc);
+  const entry = S.summary.recent.find((r) => r.n === n);
+  const id = (entry && entry.id) || epId(n);
+  const pending = S.outbox.find((op) => op.kind === 'episode' && op.id === id);
+  if (pending) return { ...pending.ep, n };
+  const cached = await cacheGet('ep:' + id, id);
+  if (cached) return { ...cached, n };
+  const doc = await api('/api/doc/' + id);
+  const ep = await decode(id, doc);
+  await cacheSet('ep:' + id, id, ep);
+  return { ...ep, n };
 }
 
 export async function loadDraft() {
+  const local = await cacheGet('draft', 'draft');
+  if (!local && (await kvGet('draftdel:' + S.userId))) return null;
   try {
     const doc = await api('/api/doc/draft');
     S.draftRev = doc.rev;
-    return await decode('draft', doc);
+    const remote = await decode('draft', doc);
+    if (local && (local.savedAt || 0) > (remote.savedAt || 0)) return local;
+    return remote;
   } catch (e) {
-    if (e.status === 404) {
-      S.draftRev = 0;
-      const local = await kvGet('draft:' + S.userId);
-      return local ? unseal(S.key, aad('draft'), local.iv, local.data) : null;
-    }
-    const local = await kvGet('draft:' + S.userId);
-    return local ? unseal(S.key, aad('draft'), local.iv, local.data) : null;
+    if (e.status === 404) S.draftRev = 0;
+    return local;
   }
 }
 
@@ -172,8 +328,9 @@ let draftTimer = null;
 let draftPending = null;
 
 export function saveDraft(draft, onStatus) {
+  draft.savedAt = Date.now();
   draftPending = draft;
-  encode('draft', draft).then((sealed) => kvSet('draft:' + S.userId, sealed));
+  cacheSet('draft', 'draft', draft);
   clearTimeout(draftTimer);
   onStatus('saving');
   draftTimer = setTimeout(() => flushDraft(onStatus), 1200);
@@ -201,13 +358,19 @@ async function flushDraft(onStatus) {
   onStatus('local');
 }
 
+export function retryDraft(onStatus) {
+  if (draftPending) flushDraft(onStatus);
+}
+
 export async function clearDraft() {
   clearTimeout(draftTimer);
   draftPending = null;
   await kvDel('draft:' + S.userId);
   try {
     await api('/api/doc/draft', { method: 'DELETE' });
-  } catch {}
+  } catch {
+    await kvSet('draftdel:' + S.userId, true);
+  }
   S.draftRev = 0;
 }
 
@@ -221,5 +384,6 @@ export async function exportAll() {
       out.docs[d.id] = { error: 'Could not decrypt' };
     }
   }
+  if (S.outbox.length) out.notSyncedYet = S.outbox.map((op) => (op.kind === 'episode' ? op.ep : op.ex));
   return out;
 }

@@ -35,7 +35,7 @@ condition to revisit), **Rejected** (with the reason).
 
 | ID | Idea | Status |
 |---|---|---|
-| `OF-01` | Offline first: finish an episode with no signal, sync later | Idea |
+| `OF-01` | Offline first: the app opens and saves with no signal, and syncs by itself when back online | **Agreed** 26 Oct 2026 (owner: "its always synced and live aand even works without the internet (only syncs when internet th)"). Built 26 Oct 2026 |
 | `AU-02` | Change your oath (re-wrap the key, no data re-encryption needed) | Idea |
 | `SH-01` | Share an episode card as an image | Idea |
 | `EG-01` | Easter eggs and secrets to find (owner wants these, 24 Oct 2026) | Idea |
@@ -77,6 +77,8 @@ mountain idea.
 
 ## Change log
 
+- **26 October 2026:** OF-01 agreed and built: works offline, syncs on its own, a sync chip on
+  home shows the state.
 - **25 October 2026:** version 1 built (AU-01, GH-01, BS-01, EP-01, HI-01, LG-01). World and
   character parked. Register rewritten around the shipped core.
 - **24 October 2026:** pivot to logging first; product story agreed (ghost, bosses, episodes,

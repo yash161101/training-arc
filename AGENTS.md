@@ -61,8 +61,15 @@ Edit `AGENTS.md`; never replace the link with a copy.
   can't be probed. Records save with compare-and-swap (`rev`) so two devices never silently
   overwrite each other. Security headers and a strict CSP are in `public/_headers` (no inline
   scripts or styles; fonts are self-hosted).
+- **Works offline, syncs on its own** (owner: "its always synced and live aand even works
+  without the internet (only syncs when internet th)", 26 Oct 2026). `public/sw.js` keeps the app
+  shell cached so it opens with no signal. Finishing an episode saves it to an encrypted outbox on
+  the phone first, then sync pushes it in order: the episode number is given at sync time
+  (server count + 1), so two phones offline at once never clash. Sync runs on open, on coming back
+  online, when the app comes to the front, and every minute. Home shows a chip: Synced, Syncing,
+  Offline · N, Waiting · N. Lock tries to sync first and warns if anything would be lost.
 - **Records:** `summary` (episode count, each exercise's last sets, bests, history, boss fights,
-  recent episodes, custom exercises), `ep-000001`... (one per episode), `draft` (the workout in
+  recent episodes, custom exercises), `ep-<time>-<random>` (one per episode; older ones are `ep-000001`...), `draft` (the workout in
   progress, also kept encrypted on the phone so a reload or crash loses nothing).
 - **Ghost:** set N races set N from the last time you did that exercise. Bodyweight compares reps;
   weighted compares estimated 1-rep max (Epley), so a heavier set with fewer reps can still win.
@@ -78,7 +85,7 @@ Edit `AGENTS.md`; never replace the link with a copy.
 - `migrations/`: the D1 database schema.
 - `public/index.html`, `public/style.css`: the page and the whole look.
 - `public/js/app.js`: screens and actions. `logic.js`: ghost, boss, episode rules.
-  `store.js`: saving and loading (encrypt, compare-and-swap, drafts). `crypto.js`: the oath and
+  `store.js`: saving and loading (encrypt, outbox, sync, compare-and-swap, drafts). `sw.js`: offline cache. `crypto.js`: the oath and
   encryption. `exercises.js`: the exercise library. `keystore.js`: IndexedDB. `api.js`: fetch.
 - `checks/e2e.mjs`: the full browser check (see README).
 - `.github/workflows/`: `checks.yml` (browser check on every push and PR), `deploy.yml` (push to
@@ -103,6 +110,11 @@ Edit `AGENTS.md`; never replace the link with a copy.
 - **One idea per commit.**
 
 ## Latest (start here)
+
+**26 October 2026: offline first (OF-01), on branch `offline-sync`, PR open, not merged.** The
+app opens with no internet, a whole episode can be logged and finished offline, and it syncs by
+itself when the signal comes back. Another phone signing in then sees it. Backups are now daily.
+Checks 37/37 (10 new offline checks). Waiting for the owner to say merge (merging deploys).
 
 **26 October 2026: auto-deploy is live.** The owner added the Cloudflare secrets (token needed
 Workers Scripts: Edit added). A manual run of Deploy passed checks and deployed. From now on,
@@ -149,6 +161,5 @@ The database was inspected: only ciphertext, no exercise names. Bad origin 403, 
 no session 401, five wrong oaths lock the name.
 
 Next: the owner deploys (README), uses it at the gym for a week or two, then we decide what the
-world/character layer should be, based on real use. Not built yet: offline-first sync (the app
-needs a connection to finish an episode; drafts survive offline), changing your oath, sharing
+world/character layer should be, based on real use. Not built yet: changing your oath, sharing
 episode cards, easter eggs.

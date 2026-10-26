@@ -1,6 +1,6 @@
 import {
   session, restore, join, enter, lock, destroy, loadSummary, saveEpisode, addCustom,
-  getEpisode, loadDraft, saveDraft, clearDraft, exportAll,
+  getEpisode, loadDraft, saveDraft, clearDraft, exportAll, onSync, syncNow, pendingCount, retryDraft,
 } from './store.js';
 import { oathProblem } from './crypto.js';
 import { GROUPS, allExercises, findExercise } from './exercises.js';
@@ -118,9 +118,8 @@ function viewHome() {
     if (b) waiting.push(bossLine(ex, b));
   }
   const last = s.recent[0];
-  return `${bar('', { right: `<button class="icon-btn" data-act="go" data-view="settings" aria-label="Settings">${ICON.gear}</button>` })}
+  return `${bar('', { right: `<span class="bar-right">${syncChip()}<button class="icon-btn" data-act="go" data-view="settings" aria-label="Settings">${ICON.gear}</button></span>` })}
   <main class="home">
-    ${session.offline ? '<p class="note">Offline. Showing what’s saved on this phone.</p>' : ''}
     <section class="hero">
       <div class="sun"></div>
       <span class="kicker">Next episode</span>
@@ -288,8 +287,15 @@ function bossBox(i, it, ex, b) {
   </div>`;
 }
 
+function syncNote(ep) {
+  const pending = ep.id && session.outbox.some((op) => op.id === ep.id);
+  return `<p class="sync-note ${pending ? 'wait' : 'ok'}">${pending ? 'Saved on this phone. Syncs when you’re online.' : 'Saved and synced.'}</p>`;
+}
+
 function viewEpisode() {
   const ep = st.episode;
+  const entry = ep.id && sum().recent.find((r) => r.id === ep.id);
+  if (entry) ep.n = entry.n;
   const back = st.episodeFrom === 'finish' ? null : st.episodeFrom;
   return `${back ? bar('', { back }) : ''}
   <main class="episode">
@@ -305,6 +311,7 @@ function viewEpisode() {
         <div><b>${ep.score.you}–${ep.score.ghost}</b><span>vs ghost</span></div>
         <div><b>${ep.volume}</b><span>kg moved</span></div>
       </div>
+      ${syncNote(ep)}
     </section>
     <section class="ep-items">
       ${ep.items.map((it) => {
@@ -534,7 +541,7 @@ const actions = {
     st.err = '';
     render();
     try {
-      const ep = await saveEpisode((n) => buildEpisode(n, d, sum(), find), find);
+      const ep = await saveEpisode((n) => buildEpisode(n, d, sum(), find));
       await clearDraft();
       st.draft = null;
       st.episode = ep;
@@ -559,7 +566,12 @@ const actions = {
     }
   },
   'ex-detail': (el) => { st.exDetail = el.dataset.id; go('exercise'); },
-  'lock': async () => { await lock(); st.draft = null; st.authTab = 'return'; st.lastName = ''; go('auth'); },
+  'lock': async () => {
+    if (pendingCount()) await syncNow();
+    const left = pendingCount();
+    if (left && !confirm(`${left} episode${left === 1 ? ' hasn\u2019t' : 's haven\u2019t'} synced yet. Locking now deletes ${left === 1 ? 'it' : 'them'} from this phone. Lock anyway?`)) return;
+    await lock(); st.draft = null; st.authTab = 'return'; st.lastName = ''; go('auth');
+  },
   'export': async () => {
     try {
       const data = await exportAll();
@@ -682,7 +694,38 @@ app.addEventListener('submit', async (e) => {
   }
 });
 
-window.addEventListener('online', () => { if (st.draft && st.view === 'workout') persist(); });
+function syncChip() {
+  const s = session.sync || {};
+  if (s.state === 'syncing') return '<span class="sync-chip">Syncing…</span>';
+  if (s.pending) return `<span class="sync-chip wait">${s.state === 'offline' ? 'Offline' : 'Waiting'} · ${s.pending}</span>`;
+  if (s.state === 'offline') return '<span class="sync-chip wait">Offline</span>';
+  if (s.state === 'error') return '<span class="sync-chip wait">Not synced</span>';
+  return '<span class="sync-chip ok">Synced</span>';
+}
+
+onSync(() => {
+  if (['home', 'history', 'progress', 'exercise'].includes(st.view)) render();
+  else if (st.view === 'episode' && st.episode) {
+    const el = app.querySelector('.sync-note');
+    if (el) el.outerHTML = syncNote(st.episode);
+    const big = app.querySelector('.ep-big');
+    const entry = st.episode.id && sum().recent.find((r) => r.id === st.episode.id);
+    if (big && entry) big.textContent = entry.n;
+  } else {
+    const el = app.querySelector('.sync-chip');
+    if (el) el.outerHTML = syncChip();
+  }
+});
+
+window.addEventListener('online', () => {
+  syncNow();
+  retryDraft((status) => { st.saveStatus = status; const el = app.querySelector('.savestate'); if (el) el.textContent = { saving: 'Saving…', saved: 'Saved', local: 'Saved on this phone. Will retry.' }[status] || ''; });
+});
+window.addEventListener('offline', () => { if (session.key) syncNow(); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && session.key) syncNow(); });
+setInterval(() => { if (document.visibilityState === 'visible' && session.key) syncNow(); }, 60000);
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 
 fetch('version.json', { cache: 'no-store' })
   .then((r) => (r.ok ? r.json() : null))
