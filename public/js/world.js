@@ -97,6 +97,7 @@ const show = (root, sel, on) => { const el = root.querySelector(sel); if (el) el
 const over = (d, n) => d != null && d >= n;
 
 export function paintValley(root, w, dark, bossWaiting) {
+  root.classList.toggle('is-night', dark);
   show(root, '#w-sun', !dark);
   show(root, '#w-birds', !dark);
   show(root, '#w-warm', !dark);

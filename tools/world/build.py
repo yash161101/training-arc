@@ -136,22 +136,22 @@ def waterfall():
         y1 = random.uniform(y0 + 80, 600)
         xa = x0 + (x1 - x0) * (y0 - 176) / 436
         xb = x0 + (x1 - x0) * (y1 - 176) / 436
-        s.append(f'<path d="M{xa:.1f} {y0:.0f} L{xb:.1f} {y1:.0f}" stroke="{random.choice(["#FFFFFF", "#FFFFFF", "#9ECBDD"])}" stroke-width="{random.choice([1, 1.5, 2, 2.5])}" opacity="{random.uniform(0.45, 0.95):.2f}"/>')
+        s.append(f'<path class="a-fall a-d{k % 4}" d="M{xa:.1f} {y0:.0f} L{xb:.1f} {y1:.0f}" stroke="{random.choice(["#FFFFFF", "#FFFFFF", "#9ECBDD"])}" stroke-width="{random.choice([1, 1.5, 2, 2.5])}" opacity="{random.uniform(0.45, 0.95):.2f}"/>')
     s.append('<g fill="#666B74"><path d="M204 318 Q218 304 236 314 Q238 334 220 340 Q204 338 204 318 Z"/><path d="M306 452 Q322 438 340 450 Q340 470 322 474 Q306 472 306 452 Z"/></g>')
     s.append('<g fill="#8E939B"><path d="M210 316 Q220 308 232 314 Q220 318 214 326 Z"/><path d="M312 450 Q324 444 334 450 Q322 454 316 462 Z"/></g>')
     s.append('<g fill="#FFFFFF" opacity="0.92"><ellipse cx="236" cy="312" rx="16" ry="7"/><ellipse cx="244" cy="322" rx="10" ry="5"/><ellipse cx="306" cy="448" rx="16" ry="7"/><ellipse cx="298" cy="458" rx="10" ry="5"/></g>')
-    s.append('<ellipse cx="240" cy="318" rx="34" ry="16" fill="url(#mist)"/><ellipse cx="304" cy="454" rx="34" ry="16" fill="url(#mist)"/>')
+    s.append('<ellipse class="a-mist" cx="240" cy="318" rx="34" ry="16" fill="url(#mist)"/><ellipse class="a-mist a-d2" cx="304" cy="454" rx="34" ry="16" fill="url(#mist)"/>')
     s.append('<ellipse cx="300" cy="652" rx="160" ry="30" fill="url(#water)"/>')
-    s.append('<path d="M150 654 Q300 684 452 650" stroke="#BFE3EF" stroke-width="2" fill="none" opacity="0.7"/><path d="M190 664 Q300 680 420 662" stroke="#BFE3EF" stroke-width="1.5" fill="none" opacity="0.5"/>')
-    s.append('<ellipse cx="270" cy="610" rx="130" ry="46" fill="url(#mist)"/><ellipse cx="216" cy="590" rx="60" ry="30" fill="url(#mist)"/><ellipse cx="330" cy="594" rx="70" ry="32" fill="url(#mist)"/>')
-    s.append('<g fill="#FFFFFF" opacity="0.92"><ellipse cx="270" cy="624" rx="66" ry="12"/><ellipse cx="214" cy="630" rx="24" ry="7"/><ellipse cx="326" cy="631" rx="28" ry="7"/></g>')
+    s.append('<path class="a-ripple" d="M150 654 Q300 684 452 650" stroke="#BFE3EF" stroke-width="2" fill="none" opacity="0.7"/><path class="a-ripple a-d2" d="M190 664 Q300 680 420 662" stroke="#BFE3EF" stroke-width="1.5" fill="none" opacity="0.5"/>')
+    s.append('<ellipse class="a-mist" cx="270" cy="610" rx="130" ry="46" fill="url(#mist)"/><ellipse class="a-mist a-d1" cx="216" cy="590" rx="60" ry="30" fill="url(#mist)"/><ellipse class="a-mist a-d3" cx="330" cy="594" rx="70" ry="32" fill="url(#mist)"/>')
+    s.append('<g class="a-foam" fill="#FFFFFF" opacity="0.92"><ellipse cx="270" cy="624" rx="66" ry="12"/><ellipse cx="214" cy="630" rx="24" ry="7"/><ellipse cx="326" cy="631" rx="28" ry="7"/></g>')
     s.append('<g fill="#6E737B"><ellipse cx="146" cy="660" rx="26" ry="11"/><ellipse cx="180" cy="676" rx="20" ry="9"/><ellipse cx="440" cy="664" rx="22" ry="10"/><ellipse cx="410" cy="680" rx="16" ry="7"/></g>')
     s.append('<g fill="#9A9EA5"><ellipse cx="142" cy="655" rx="18" ry="5"/><ellipse cx="438" cy="659" rx="14" ry="4"/></g>')
     return ''.join(s)
 
 def stream():
     s = ['<path d="M420 646 Q520 650 600 676 Q690 706 740 740 Q790 772 812 800 L668 800 Q650 774 618 748 Q570 712 500 690 Q440 676 400 668 Z" fill="url(#water)"/>']
-    s.append('<g stroke="#BFE3EF" stroke-width="2" fill="none" opacity="0.7" stroke-linecap="round"><path d="M470 664 Q520 670 556 684"/><path d="M600 700 Q640 716 668 736"/><path d="M700 760 Q720 774 734 790"/><path d="M640 726 Q666 744 680 760"/></g>')
+    s.append('<g stroke="#BFE3EF" stroke-width="2" fill="none" opacity="0.7" stroke-linecap="round"><path class="a-ripple" d="M470 664 Q520 670 556 684"/><path class="a-ripple a-d1" d="M600 700 Q640 716 668 736"/><path class="a-ripple a-d2" d="M700 760 Q720 774 734 790"/><path class="a-ripple a-d3" d="M640 726 Q666 744 680 760"/></g>')
     s.append('<g fill="#6E737B"><ellipse cx="600" cy="672" rx="10" ry="4"/><ellipse cx="760" cy="744" rx="12" ry="5"/><ellipse cx="640" cy="760" rx="10" ry="4"/></g>')
     s.append('<use href="#reed" x="440" y="680"/><use href="#reed" x="458" y="686"/><use href="#reed" x="790" y="752"/><use href="#reed" x="652" y="782"/><use href="#reed" x="560" y="662"/>')
     return ''.join(s)
@@ -188,6 +188,7 @@ def cherry():
     for cx, cy, r in [(452, 532, 24), (486, 508, 30), (528, 520, 26), (468, 552, 20), (512, 546, 22), (494, 530, 24)]:
         s.append(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="#F2AFC3"/><circle cx="{cx + r * 0.35}" cy="{cy - r * 0.35}" r="{r * 0.6}" fill="#F9CDDA"/><circle cx="{cx - r * 0.4}" cy="{cy + r * 0.3}" r="{r * 0.45}" fill="#E595AD"/>')
     s.append('<ellipse cx="480" cy="642" rx="40" ry="6" fill="#2B1E10" opacity="0.22"/>')
+    s.append('<g fill="#F2AFC3">' + ''.join(f'<ellipse class="a-petal a-d{i % 4} a-p{i % 3}" cx="{x}" cy="{y}" rx="3.5" ry="2.2"/>' for i, (x, y) in enumerate([(460, 540), (500, 520), (530, 545), (476, 560), (512, 500), (448, 525), (540, 528), (490, 552)])) + '</g>')
     return ''.join(s)
 
 def dojo():
@@ -211,9 +212,9 @@ def dojo():
     s.append('<rect x="1168" y="310" width="64" height="11" fill="#262B38"/><path d="M1162 313 l-9 -9 M1238 313 l9 -9" stroke="#262B38" stroke-width="6" stroke-linecap="round"/>')
     s.append('<rect x="1182" y="356" width="36" height="22" fill="#5E3920"/><rect x="1186" y="359" width="28" height="16" fill="#F6EDDB"/><g fill="#1D1E21"><rect x="1191" y="367" width="5" height="5"/><rect x="1197" y="367" width="5" height="5"/><rect x="1197" y="361" width="5" height="5"/><rect x="1203" y="367" width="5" height="5"/><rect x="1203" y="361" width="5" height="5"/></g>')
     for lx in (1030, 1370):
-        s.append(f'<path d="M{lx} 452 L{lx} 464" stroke="#3B2A1E" stroke-width="2"/><rect x="{lx - 11}" y="464" width="22" height="28" rx="9" fill="#F2B33D"/><path d="M{lx - 11} 473 H{lx + 11} M{lx - 11} 482 H{lx + 11}" stroke="#C9851B" stroke-width="1.5"/><rect x="{lx - 6}" y="461" width="12" height="4" fill="#3B2A1E"/><rect x="{lx - 6}" y="491" width="12" height="4" fill="#3B2A1E"/>')
-    s.append('<path d="M1452 606 L1452 360" stroke="#4A2E1A" stroke-width="5"/><path d="M1454 366 L1494 366 L1494 520 L1474 508 L1454 520 Z" fill="#FFC21A"/><path d="M1454 366 L1494 366" stroke="#4A2E1A" stroke-width="4"/>')
-    s.append('<g fill="#1D1E21"><rect x="1462" y="410" width="7" height="7"/><rect x="1471" y="410" width="7" height="7"/><rect x="1471" y="401" width="7" height="7"/><rect x="1480" y="410" width="7" height="7"/><rect x="1480" y="401" width="7" height="7"/><rect x="1480" y="392" width="7" height="7"/></g>')
+        s.append(f'<g class="a-sway a-d{lx % 3}"><path d="M{lx} 452 L{lx} 464" stroke="#3B2A1E" stroke-width="2"/><rect x="{lx - 11}" y="464" width="22" height="28" rx="9" fill="#F2B33D"/><path d="M{lx - 11} 473 H{lx + 11} M{lx - 11} 482 H{lx + 11}" stroke="#C9851B" stroke-width="1.5"/><rect x="{lx - 6}" y="461" width="12" height="4" fill="#3B2A1E"/><rect x="{lx - 6}" y="491" width="12" height="4" fill="#3B2A1E"/><rect class="n-only" x="{lx - 11}" y="464" width="22" height="28" rx="9" fill="#FFD37A"/></g>')
+    s.append('<path d="M1452 606 L1452 360" stroke="#4A2E1A" stroke-width="5"/><g class="a-flag"><path d="M1454 366 L1494 366 L1494 520 L1474 508 L1454 520 Z" fill="#FFC21A"/>'
+             '<g fill="#1D1E21"><rect x="1462" y="410" width="7" height="7"/><rect x="1471" y="410" width="7" height="7"/><rect x="1471" y="401" width="7" height="7"/><rect x="1480" y="410" width="7" height="7"/><rect x="1480" y="401" width="7" height="7"/><rect x="1480" y="392" width="7" height="7"/></g></g><path d="M1454 366 L1494 366" stroke="#4A2E1A" stroke-width="4"/>')
     s.append('<use href="#toro" x="1120" y="640"/><use href="#toro" x="1280" y="640"/>')
     s.append('<g id="w-floor2" display="none"><rect x="1124" y="238" width="152" height="78" fill="url(#wall)"/><g fill="#6B4229"><rect x="1124" y="238" width="7" height="78"/><rect x="1269" y="238" width="7" height="78"/><rect x="1196" y="238" width="8" height="78"/><rect x="1124" y="238" width="152" height="6"/></g><g stroke="#A08A66" stroke-width="1.5"><path d="M1131 266 H1196 M1131 292 H1196 M1204 266 H1269 M1204 292 H1269 M1163 244 V316 M1236 244 V316"/></g>'
              '<path d="M1086 244 Q1120 238 1134 214 L1266 214 Q1280 238 1314 244 Q1312 252 1300 250 Q1276 246 1262 226 L1138 226 Q1124 246 1100 250 Q1088 252 1086 244 Z" fill="url(#roof)"/><path d="M1134 214 Q1166 186 1200 180 Q1234 186 1266 214 Z" fill="url(#roof)"/><rect x="1178" y="174" width="44" height="9" fill="#262B38"/>'
@@ -234,7 +235,7 @@ def boulders():
              '<path d="M1880 680 L1900 674 L1888 678 Z M1922 672 Q1944 668 1956 688 Q1942 678 1924 682 Z" fill="#6E9B4A"/></g>')
     s.append('<g id="w-bosswait" display="none"><ellipse cx="1760" cy="720" rx="64" ry="7" fill="#2B1E10" opacity="0.26"/>')
     s.append('<path d="M1706 718 Q1690 658 1726 628 Q1764 608 1798 634 Q1826 668 1812 718 Z" fill="url(#boulder)"/><path d="M1726 628 Q1764 608 1798 634 Q1766 624 1730 640 Z" fill="#6E9B4A"/><path d="M1734 676 q22 -12 46 2" stroke="#5D6168" stroke-width="2" fill="none"/>')
-    s.append('<path d="M1762 616 L1762 588" stroke="#4A2E1A" stroke-width="3"/><path d="M1763 589 L1786 595 L1763 602 Z" fill="#FFC21A"/></g>')
+    s.append('<path d="M1762 616 L1762 588" stroke="#4A2E1A" stroke-width="3"/><path class="a-flag" d="M1763 589 L1786 595 L1763 602 Z" fill="#FFC21A"/></g>')
     return ''.join(s)
 
 HILL = [(1540, 606), (1600, 576), (1652, 542), (1700, 504), (1742, 466), (1782, 432), (1822, 402), (1852, 372), (1872, 340), (1880, 326), (1990, 326), (2002, 338), (2026, 368), (2060, 392), (2096, 432), (2136, 510), (2180, 606)]
@@ -325,9 +326,9 @@ def forge():
     s.append('<rect x="2094" y="486" width="10" height="126" fill="url(#wood)"/><rect x="2296" y="486" width="10" height="126" fill="url(#wood)"/>')
     s.append('<path d="M2070 494 L2330 452 L2334 468 L2074 512 Z" fill="#4B3A2C"/><path d="M2070 494 L2330 452" stroke="#6B5544" stroke-width="2"/>')
     s.append('<rect x="2250" y="420" width="26" height="54" fill="#7E828A"/><rect x="2246" y="414" width="34" height="8" fill="#5F636A"/>')
-    s.append('<g id="w-fire"><g fill="#E9EAEC" opacity="0.7"><circle cx="2264" cy="396" r="11"/><circle cx="2274" cy="372" r="14"/><circle cx="2262" cy="344" r="17"/><circle cx="2280" cy="312" r="20"/><circle cx="2266" cy="276" r="22"/></g>')
+    s.append('<g id="w-fire"><g fill="#E9EAEC" opacity="0.7"><circle class="a-smoke" cx="2264" cy="396" r="11"/><circle class="a-smoke a-d1" cx="2274" cy="372" r="14"/><circle class="a-smoke a-d2" cx="2262" cy="344" r="17"/><circle class="a-smoke a-d3" cx="2280" cy="312" r="20"/><circle class="a-smoke a-d4" cx="2266" cy="276" r="22"/></g>')
     s.append('<circle cx="2236" cy="570" r="70" fill="url(#glow)" opacity="0.6"/></g>')
-    s.append('<rect x="2200" y="548" width="76" height="64" fill="#8C9096"/><g stroke="#6E7278" stroke-width="1.5"><path d="M2200 568 H2276 M2200 588 H2276 M2238 548 V568 M2222 568 V588 M2256 568 V588"/></g><ellipse cx="2238" cy="550" rx="28" ry="7" fill="#4A4D55"/><g id="w-coals"><ellipse cx="2238" cy="550" rx="28" ry="7" fill="url(#coal)"/></g>')
+    s.append('<rect x="2200" y="548" width="76" height="64" fill="#8C9096"/><g stroke="#6E7278" stroke-width="1.5"><path d="M2200 568 H2276 M2200 588 H2276 M2238 548 V568 M2222 568 V588 M2256 568 V588"/></g><ellipse cx="2238" cy="550" rx="28" ry="7" fill="#4A4D55"/><g id="w-coals"><ellipse class="a-glow" cx="2238" cy="550" rx="28" ry="7" fill="url(#coal)"/></g>')
     s.append('<rect x="2128" y="578" width="30" height="34" fill="#6E4428"/><ellipse cx="2143" cy="578" rx="15" ry="4" fill="#A06C43"/>')
     s.append('<path d="M2120 556 h46 l-6 11 h-9 v11 h-16 v-11 h-9 Z" fill="#2E3035"/><path d="M2122 556 h42" stroke="#5F636A" stroke-width="2"/>')
     s.append('<path d="M2170 524 L2186 548" stroke="#6E4428" stroke-width="5" stroke-linecap="round"/><rect x="2162" y="516" width="18" height="10" fill="#3A3C42" transform="rotate(30 2171 521)"/>')
@@ -355,7 +356,7 @@ def foreground():
         s.append(f'<ellipse cx="{x}" cy="{y}" rx="18" ry="8" fill="#7E828A"/><ellipse cx="{x - 4}" cy="{y - 3}" rx="12" ry="4" fill="#9EA2A8"/>')
     for x, y in [(120, 740), (340, 760), (980, 770), (1500, 776), (2080, 780), (2300, 760)]:
         s.append(f'<circle cx="{x}" cy="{y}" r="3.5" fill="#FFC21A"/><circle cx="{x + 12}" cy="{y + 6}" r="3" fill="#F7F1E3"/>')
-    s.append(pine(2380, 812, 520, '#254536', '#2F5644', '#3E2A1C'))
+    s.append(f'<g class="a-tree">{pine(2380, 812, 520, "#254536", "#2F5644", "#3E2A1C")}</g>')
     s.append('<path d="M0 800 L0 700 Q30 720 44 800 Z" fill="#3B6A2A"/>')
     return ''.join(s)
 
@@ -364,23 +365,23 @@ def sky():
     s = ['<rect width="2400" height="800" fill="url(#sky)"/>']
     s.append('<g id="w-sun"><circle cx="1980" cy="190" r="220" fill="url(#sunglow)"/><circle cx="1980" cy="190" r="52" fill="#FFF6DC"/></g>')
     s.append('<g id="w-nightsky" display="none"><rect width="2400" height="800" fill="#16224A" opacity="0.75"/>')
-    s.append(''.join(f'<circle cx="{random.randint(0, 2400)}" cy="{random.randint(6, 330)}" r="{random.choice([1, 1, 1.4, 1.8])}" fill="#FFFFFF" opacity="{random.choice([0.5, 0.7, 0.95])}"/>' for _ in range(120)))
+    s.append(''.join(f'<circle class="{"a-twinkle a-d" + str(i % 4) if i % 3 == 0 else ""}" cx="{random.randint(0, 2400)}" cy="{random.randint(6, 330)}" r="{random.choice([1, 1, 1.4, 1.8])}" fill="#FFFFFF" opacity="{random.choice([0.5, 0.7, 0.95])}"/>' for i in range(120)))
     s.append('<circle cx="1980" cy="150" r="120" fill="url(#sunglow)" opacity="0.3"/><mask id="mm"><rect width="2400" height="800" fill="#FFFFFF"/><circle cx="1998" cy="136" r="38" fill="#000000"/></mask><circle cx="1980" cy="150" r="42" fill="#FFF3C9" mask="url(#mm)"/></g>')
-    s.append('<g fill="#FFFFFF" opacity="0.9"><ellipse cx="620" cy="110" rx="120" ry="16"/><ellipse cx="690" cy="96" rx="64" ry="20"/><ellipse cx="560" cy="100" rx="50" ry="14"/><ellipse cx="1420" cy="80" rx="140" ry="15"/><ellipse cx="1500" cy="66" rx="70" ry="20"/><ellipse cx="1360" cy="70" rx="46" ry="13"/><ellipse cx="2200" cy="120" rx="80" ry="12"/></g>')
-    s.append('<g fill="#FFFFFF" opacity="0.54"><ellipse cx="1000" cy="200" rx="140" ry="8"/><ellipse cx="1760" cy="250" rx="120" ry="7"/></g>')
-    s.append('<g id="w-birds" fill="none" stroke="#45506A" stroke-width="2" stroke-linecap="round"><path d="M1580 160 q7 -7 14 0 q7 -7 14 0"/><path d="M1616 178 q5 -5 10 0 q5 -5 10 0"/><path d="M1556 186 q4 -4 8 0 q4 -4 8 0"/></g>')
+    s.append('<g fill="#FFFFFF" opacity="0.9"><g class="a-cloud"><ellipse cx="620" cy="110" rx="120" ry="16"/><ellipse cx="690" cy="96" rx="64" ry="20"/><ellipse cx="560" cy="100" rx="50" ry="14"/></g><g class="a-cloud a-c2"><ellipse cx="1420" cy="80" rx="140" ry="15"/><ellipse cx="1500" cy="66" rx="70" ry="20"/><ellipse cx="1360" cy="70" rx="46" ry="13"/></g><g class="a-cloud a-c3"><ellipse cx="2200" cy="120" rx="80" ry="12"/></g></g>')
+    s.append('<g fill="#FFFFFF" opacity="0.54"><g class="a-cloud a-c3"><ellipse cx="1000" cy="200" rx="140" ry="8"/></g><g class="a-cloud a-c2"><ellipse cx="1760" cy="250" rx="120" ry="7"/></g></g>')
+    s.append('<g id="w-birds" fill="none" stroke="#45506A" stroke-width="2" stroke-linecap="round"><g class="a-birds"><path class="a-flap" d="M1580 160 q7 -7 14 0 q7 -7 14 0"/><path class="a-flap a-d1" d="M1616 178 q5 -5 10 0 q5 -5 10 0"/><path class="a-flap a-d2" d="M1556 186 q4 -4 8 0 q4 -4 8 0"/></g></g>')
     return ''.join(s)
 
 def night_overlay():
     s = ['<g id="w-night" display="none"><rect width="2400" height="800" fill="#0D1636" opacity="0.55"/>']
     for x, y, r in [(1030, 478, 50), (1370, 478, 50), (1120, 597, 26), (1280, 597, 26), (1200, 500, 90)]:
-        s.append(f'<circle cx="{x}" cy="{y}" r="{r}" fill="url(#glow)"/>')
-    s.append('<rect x="1019" y="464" width="22" height="28" rx="9" fill="#FFD37A"/><rect x="1359" y="464" width="22" height="28" rx="9" fill="#FFD37A"/><rect x="1164" y="480" width="72" height="70" fill="#FFC75A" opacity="0.4"/>')
+        s.append(f'<circle class="a-glow a-d{x % 4}" cx="{x}" cy="{y}" r="{r}" fill="url(#glow)"/>')
+    s.append('<rect x="1164" y="480" width="72" height="70" fill="#FFC75A" opacity="0.4"/>')
     s.append('<rect x="1115" y="594" width="10" height="9" fill="#FFD37A"/><rect x="1275" y="594" width="10" height="9" fill="#FFD37A"/>')
     s.append('<g id="w-nightfire"><circle cx="2238" cy="556" r="110" fill="url(#glow)"/><ellipse cx="2238" cy="550" rx="28" ry="7" fill="url(#coal)"/></g>')
-    s.append('<path d="M1454 366 L1494 366 L1494 520 L1474 508 L1454 520 Z" fill="#FFC21A" opacity="0.55"/>')
+    s.append('<path class="a-flag" d="M1454 366 L1494 366 L1494 520 L1474 508 L1454 520 Z" fill="#FFC21A" opacity="0.55"/>')
     random.seed(9)
-    s.append(''.join(f'<circle cx="{random.uniform(420, 2300):.0f}" cy="{random.uniform(560, 760):.0f}" r="{random.choice([1.5, 2, 2.4])}" fill="#D7F58A" opacity="0.9"/>' for _ in range(26)))
+    s.append(''.join(f'<circle class="a-fly a-d{i % 5}" cx="{random.uniform(420, 2300):.0f}" cy="{random.uniform(560, 760):.0f}" r="{random.choice([1.5, 2, 2.4])}" fill="#D7F58A" opacity="0.9"/>' for i in range(26)))
     s.append('</g>')
     return ''.join(s)
 
