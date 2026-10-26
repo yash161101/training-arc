@@ -38,11 +38,19 @@ export async function deriveFromOath(oath, saltB64) {
   return { kek, authKey: toB64(bits.slice(32)) };
 }
 
-export function unwrapMaster(kek, wrappedKey, wrapIv) {
+export function unwrapMaster(kek, wrappedKey, wrapIv, extractable = false) {
   return crypto.subtle.unwrapKey(
     'raw', fromB64(wrappedKey), kek, { name: 'AES-GCM', iv: fromB64(wrapIv) },
-    { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
+    { name: 'AES-GCM', length: 256 }, extractable, ['encrypt', 'decrypt']
   );
+}
+
+export async function exportMaster(key) {
+  return toB64(await crypto.subtle.exportKey('raw', key));
+}
+
+export function importMaster(raw) {
+  return crypto.subtle.importKey('raw', fromB64(raw), { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
 }
 
 export async function createMaster(kek) {

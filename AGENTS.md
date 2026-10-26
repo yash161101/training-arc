@@ -55,6 +55,10 @@ Edit `AGENTS.md`; never replace the link with a copy.
   non-extractable key. Sessions last 180 days and renew every time the app opens, so people stay
   signed in (owner: "keep it simple, passphrase is good and then they stay signed in",
   25 Oct 2026). Lock forgets the key. A forgotten passphrase can't be reset; the app says so at sign up.
+  If the phone refuses to store the key object, it falls back to storing the key's bytes in
+  IndexedDB, and asks the browser to keep the app's storage. Settings shows "This phone stays
+  signed in" or not (owner: "add a remember device? i dont wanna login everytime", 26 Oct 2026).
+  On iPhone, Safari and the home screen icon keep separate sign-ins: sign in once in each.
 - Server: sessions are random tokens in `__Host-` cookies (Secure, HttpOnly, SameSite=Strict),
   stored hashed. Mutating requests must be JSON and same-origin. Rate limits on sign up, login and
   pre-login; 5 wrong oaths lock a name for 15 minutes; unknown names get a fake salt so names
@@ -110,6 +114,12 @@ Edit `AGENTS.md`; never replace the link with a copy.
 - **One idea per commit.**
 
 ## Latest (start here)
+
+**26 October 2026: remember this phone, made sturdier (branch `remember-device`, PR open).** The
+owner was asked to sign in again on iPhone (home screen icon and Safari). Added the fallback,
+storage keep request and Settings line above. Checks 40/40. Next up: a new brand (colours, fonts,
+icon as a simple symbol, plus shapes that show tracking, the way Vishal's app has its own visual
+system; owner, 26 Oct 2026). Name stays Training Arc.
 
 **26 October 2026: offline first (OF-01) is live.** Merged as PR #4 (owner: "merge") and deployed. The
 app opens with no internet, a whole episode can be logged and finished offline, and it syncs by

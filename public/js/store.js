@@ -1,5 +1,5 @@
 import { api, ApiError } from './api.js';
-import { seal, unseal, deriveFromOath, createMaster, unwrapMaster, toB64, randomBytes } from './crypto.js';
+import { seal, unseal, deriveFromOath, createMaster, unwrapMaster, exportMaster, importMaster, toB64, randomBytes } from './crypto.js';
 import { kvGet, kvSet, kvDel, kvClear } from './keystore.js';
 import { EMPTY_SUMMARY, applyEpisode } from './logic.js';
 import { findExercise } from './exercises.js';
@@ -7,7 +7,7 @@ import { findExercise } from './exercises.js';
 const S = {
   userId: null, name: null, key: null,
   base: null, baseRev: 0, outbox: [], summary: null,
-  draftRev: 0, sync: { state: 'idle', pending: 0 },
+  draftRev: 0, sync: { state: 'idle', pending: 0 }, remembered: false,
 };
 
 export const session = S;
@@ -55,17 +55,36 @@ async function cacheGet(name, docId) {
 }
 
 function reset() {
-  Object.assign(S, { userId: null, name: null, key: null, base: null, baseRev: 0, outbox: [], summary: null, draftRev: 0 });
+  Object.assign(S, { userId: null, name: null, key: null, base: null, baseRev: 0, outbox: [], summary: null, draftRev: 0, remembered: false });
 }
 
-async function remember(keep) {
-  if (keep) await kvSet('device', { userId: S.userId, name: S.name, key: S.key });
-  else await kvDel('device');
+async function remember(keep, extractable) {
+  S.remembered = false;
+  if (!keep) return kvDel('device');
+  try {
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  } catch {}
+  const base = { userId: S.userId, name: S.name };
+  if (await kvSet('device', { ...base, key: S.key })) {
+    const back = await kvGet('device');
+    if (back && back.key) return (S.remembered = true);
+  }
+  try {
+    S.remembered = await kvSet('device', { ...base, raw: await exportMaster(await extractable()) });
+  } catch {
+    await kvSet('device', base);
+  }
 }
 
 export async function restore() {
   const dev = await kvGet('device');
+  if (dev && !dev.key && dev.raw) {
+    try {
+      dev.key = await importMaster(dev.raw);
+    } catch {}
+  }
   if (!dev || !dev.key) return { state: 'none', name: dev && dev.name };
+  S.remembered = true;
   try {
     const me = await api('/api/me');
     if (me.userId !== dev.userId) {
@@ -91,7 +110,7 @@ export async function join(name, oath, keep, invite) {
   const r = await api('/api/signup', { method: 'POST', body: { name, salt, authKey, wrappedKey, wrapIv, invite } });
   reset();
   Object.assign(S, { userId: r.userId, name: r.name, key: master });
-  await remember(keep);
+  await remember(keep, () => unwrapMaster(kek, wrappedKey, wrapIv, true));
 }
 
 export async function enter(name, oath, keep) {
@@ -101,7 +120,7 @@ export async function enter(name, oath, keep) {
   const key = await unwrapMaster(kek, r.wrappedKey, r.wrapIv);
   reset();
   Object.assign(S, { userId: r.userId, name: r.name, key });
-  await remember(keep);
+  await remember(keep, () => unwrapMaster(kek, r.wrappedKey, r.wrapIv, true));
 }
 
 export function pendingCount() {

@@ -391,6 +391,7 @@ function viewSettings() {
       <h2>${esc(session.name)}</h2>
       <p class="hint">Everything you log is encrypted on this phone with a key only your passphrase can unlock, before it's saved. The server stores scrambled data it can't read.</p>
     </section>
+    <p class="remembered ${session.remembered ? 'ok' : ''}">${session.remembered ? 'This phone stays signed in.' : 'This phone won’t stay signed in. Lock, then sign in with “Stay signed in” ticked.'}</p>
     <button class="btn black" data-act="lock">Lock this phone</button>
     <p class="hint">Signs out here and forgets the key. You'll need your passphrase to get back in.</p>
     <button class="btn outline" data-act="export">Download my data</button>
