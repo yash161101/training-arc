@@ -156,6 +156,7 @@ await page.click('[data-act="go"][data-view="home"]');
 await page.waitForSelector('.hero');
 await page.waitForSelector('.grounds svg.valley', { timeout: 15000 });
 ok('Training grounds show on home', !!(await page.$('.grounds svg.valley')));
+ok('The grounds move: water, clouds, birds, smoke', (await page.evaluate(() => document.getAnimations().length)) > 40);
 ok('Grounds start on the dojo', (await page.$eval('.grounds-scroll', (el) => el.scrollLeft)) > 100);
 ok('A beaten boss leaves a split boulder', (await page.$eval('#w-split1', (el) => el.getAttribute('display'))) === 'inline');
 await shot('16-grounds');

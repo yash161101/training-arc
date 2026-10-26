@@ -88,8 +88,8 @@ def scene():
         side = 26 if idx % 2 == 0 else -26
         s.append(f'<g class="c-land" data-i="{si}" data-x="{x}" data-y="{y}"><ellipse cx="{x}" cy="{y + 2}" rx="{w / 2 + 6:.1f}" ry="{6 - depth * 2:.1f}" fill="#8E9298"/><ellipse cx="{x}" cy="{y}" rx="{w / 2:.1f}" ry="{5 - depth * 2:.1f}" fill="#B3B7BC"/>'
                  f'<g class="l-on"><g transform="translate({x + side * sc * 1.4:.1f} {y:.1f}) scale({sc:.2f})"><use href="#toro"/></g>'
-                 f'<path d="M{x - side * sc:.1f} {y:.1f} L{x - side * sc:.1f} {y - 34 * sc:.1f}" stroke="#4A2E1A" stroke-width="2"/><path d="M{x - side * sc:.1f} {y - 34 * sc:.1f} L{x - side * sc + 16 * sc:.1f} {y - 29 * sc:.1f} L{x - side * sc:.1f} {y - 24 * sc:.1f} Z" fill="#FFC21A"/>'
-                 f'<circle class="l-glow" cx="{x + side * sc * 1.4:.1f}" cy="{y - 40 * sc:.1f}" r="26" fill="url(#glow)"/></g>'
+                 f'<path d="M{x - side * sc:.1f} {y:.1f} L{x - side * sc:.1f} {y - 34 * sc:.1f}" stroke="#4A2E1A" stroke-width="2"/><path class="a-flag" d="M{x - side * sc:.1f} {y - 34 * sc:.1f} L{x - side * sc + 16 * sc:.1f} {y - 29 * sc:.1f} L{x - side * sc:.1f} {y - 24 * sc:.1f} Z" fill="#FFC21A"/>'
+                 f'<circle class="l-glow a-glow" cx="{x + side * sc * 1.4:.1f}" cy="{y - 40 * sc:.1f}" r="26" fill="url(#glow)"/></g>'
                  f'<g class="l-off" transform="translate({x + side * sc * 1.4:.1f} {y:.1f}) scale({sc:.2f})" opacity="0.5"><use href="#toro"/></g></g>')
     hx, hy = WAY[4]
     s.append(f'<g transform="translate({hx - 70} {hy + 4})"><rect x="-22" y="-8" width="44" height="8" fill="#8E9298"/><rect x="-16" y="-38" width="32" height="30" fill="#7A4D2D"/><rect x="-10" y="-32" width="20" height="18" fill="#2B1E10"/><rect x="-5" y="-27" width="10" height="9" fill="#F2B33D"/><path d="M-26 -38 Q0 -56 26 -38 L22 -34 Q0 -48 -22 -34 Z" fill="#3A3F50"/></g>')
@@ -97,8 +97,8 @@ def scene():
     gx, gy = 467, 214
     s.append(f'<rect x="{gx - 66}" y="{gy - 6}" width="132" height="8" fill="url(#stone)"/><rect x="{gx - 52}" y="{gy - 112}" width="10" height="106" fill="#3A2416"/><rect x="{gx + 42}" y="{gy - 112}" width="10" height="106" fill="#3A2416"/>')
     s.append(f'<path d="M{gx - 70} {gy - 120} Q{gx} {gy - 134} {gx + 70} {gy - 120} L{gx + 68} {gy - 109} Q{gx} {gy - 120} {gx - 68} {gy - 109} Z" fill="#3A2416"/><rect x="{gx - 58}" y="{gy - 97}" width="116" height="8" fill="#3A2416"/><rect x="{gx - 13}" y="{gy - 109}" width="26" height="12" fill="#FFC21A"/>')
-    s.append('<g fill="#FFFFFF" opacity="0.88"><ellipse cx="140" cy="600" rx="170" ry="26"/><ellipse cx="260" cy="584" rx="110" ry="24"/><ellipse cx="700" cy="560" rx="190" ry="28"/><ellipse cx="820" cy="590" rx="120" ry="22"/><ellipse cx="40" cy="640" rx="90" ry="18"/></g>')
-    s.append('<g fill="#FFFFFF" opacity="0.55"><ellipse cx="450" cy="610" rx="210" ry="16"/><ellipse cx="620" cy="640" rx="140" ry="12"/></g>')
+    s.append('<g fill="#FFFFFF" opacity="0.88"><g class="a-cloud"><ellipse cx="140" cy="600" rx="170" ry="26"/><ellipse cx="260" cy="584" rx="110" ry="24"/><ellipse cx="40" cy="640" rx="90" ry="18"/></g><g class="a-cloud a-c2"><ellipse cx="700" cy="560" rx="190" ry="28"/><ellipse cx="820" cy="590" rx="120" ry="22"/></g></g>')
+    s.append('<g fill="#FFFFFF" opacity="0.55"><g class="a-cloud a-c3"><ellipse cx="450" cy="610" rx="210" ry="16"/><ellipse cx="620" cy="640" rx="140" ry="12"/></g></g>')
     s.append('<path d="M0 1500 Q450 1470 900 1500 L900 1600 L0 1600 Z" fill="#6E9A4C"/>')
     s.append('<g transform="translate(450 1566)"><rect x="-30" y="-6" width="60" height="8" fill="#8E9298"/><rect x="-12" y="-34" width="24" height="28" fill="#9A9EA4"/><rect x="-8" y="-28" width="16" height="10" fill="#FFC21A"/></g>')
     s.append('<g fill="#4C7A31">' + ''.join(f'<use href="#tuft" transform="translate({x} {y}) scale(1.1)"/>' for x, y in [(60, 1580), (260, 1590), (380, 1570), (600, 1585), (720, 1596), (880, 1576)]) + '</g>')

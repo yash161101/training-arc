@@ -98,6 +98,11 @@ Edit `AGENTS.md`; never replace the link with a copy.
     bodyweight exercise) + 50 per good week. Forms: 1 + one per 3 sessions of an exercise, max 5.
   - Each boss beaten leaves a split boulder (two shown); a waiting boss shows as a whole one.
   - Night follows dark mode.
+  - It moves (owner: "why is everything static. Where's the movement in the water the birds
+    everything", 26 Oct 2026): the waterfall pours, the stream ripples, mist, drifting clouds,
+    birds, forge smoke, fluttering banner and flags, swaying lanterns and big tree, falling
+    petals, candle flicker; at night fireflies and twinkling stars. All CSS animation on classes
+    the scene scripts add (`a-*` in style.css); reduce-motion phones get the still version.
 - **Records:** `summary` (episode count, each exercise's last sets, bests, history, boss fights,
   recent episodes, custom exercises), `ep-<time>-<random>` (one per episode; older ones are `ep-000001`...), `draft` (the workout in
   progress, also kept encrypted on the phone so a reload or crash loses nothing).

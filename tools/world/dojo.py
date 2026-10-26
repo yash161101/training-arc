@@ -63,7 +63,7 @@ def scene():
     for x, y in ((414, 520), (440, 520), (466, 520), (440, 494), (466, 494), (466, 468)):
         s.append(f'<rect x="{x}" y="{y}" width="22" height="22" fill="#1D1E21"/>')
     s.append('<rect x="414" y="560" width="74" height="4" fill="#1D1E21" opacity="0.7"/>')
-    s.append('<rect x="430" y="612" width="40" height="28" fill="#4A2E1A"/><path d="M450 612 L450 590" stroke="#4A2E1A" stroke-width="2"/><ellipse cx="450" cy="586" rx="5" ry="8" fill="#FFC75A"/>')
+    s.append('<rect x="430" y="612" width="40" height="28" fill="#4A2E1A"/><path d="M450 612 L450 590" stroke="#4A2E1A" stroke-width="2"/><ellipse class="a-flicker" cx="450" cy="586" rx="5" ry="8" fill="#FFC75A"/>')
     for bx in (350, 524):
         s.append(f'<path d="M{bx} 350 L{bx + 26} 350 L{bx + 26} 560 L{bx + 13} 548 L{bx} 560 Z" fill="#FFC21A"/><rect x="{bx - 2}" y="346" width="30" height="6" fill="#3A2416"/>')
     for i in range(6):
@@ -82,7 +82,7 @@ def scene():
     mid = ((wa[0] + wb[0]) / 2, (wa[1] + wb[1]) / 2), ((wd[0] + wc[0]) / 2, (wd[1] + wc[1]) / 2)
     s.append(f'<path d="M{mid[0][0]:.0f} {mid[0][1]:.0f} L{mid[1][0]:.0f} {mid[1][1]:.0f}" stroke="#5E3920" stroke-width="6"/>')
     if True:
-        s.append(f'<polygon id="d-ray" points="{wa[0]:.0f},{wa[1]:.0f} {wb[0]:.0f},{wb[1]:.0f} {fl(0.4, 0.55)[0]:.0f},{fl(0.4, 0.55)[1]:.0f} {fl(-0.3, 0.05)[0]:.0f},{fl(-0.3, 0.05)[1]:.0f}" fill="url(#ray)"/>')
+        s.append(f'<polygon id="d-ray" class="a-shimmer" points="{wa[0]:.0f},{wa[1]:.0f} {wb[0]:.0f},{wb[1]:.0f} {fl(0.4, 0.55)[0]:.0f},{fl(0.4, 0.55)[1]:.0f} {fl(-0.3, 0.05)[0]:.0f},{fl(-0.3, 0.05)[1]:.0f}" fill="url(#ray)"/>')
     r0, r1 = rw(0.1, 0.84), rw(0.86, 0.84)
     s.append(f'<path d="M{r0[0]:.0f} {r0[1]:.0f} L{r1[0]:.0f} {r1[1]:.0f}" stroke="#3A2416" stroke-width="5"/>')
     ro = [0.15, 0.27, 0.39, 0.51, 0.63, 0.75]
@@ -96,7 +96,7 @@ def scene():
                  f'<rect x="{x0 - w - 3:.0f}" y="{top[1] - 4:.0f}" width="{w + 6:.0f}" height="5" fill="#3A2416"/><rect x="{x0 - w - 3:.0f}" y="{bot[1]:.0f}" width="{w + 6:.0f}" height="5" fill="#3A2416"/>{marks}</g>'
                  f'<g class="sc-rolled"><rect x="{x0 - w:.0f}" y="{top[1] - 2:.0f}" width="{w:.0f}" height="{w * 0.45:.0f}" rx="{w * 0.22:.0f}" fill="#E9DCC0" stroke="#3A2416" stroke-width="1.5"/><rect x="{x0 - w - 3:.0f}" y="{top[1] - 4:.0f}" width="{w + 6:.0f}" height="4" fill="#3A2416"/></g></g>')
     for (lx, ly, sc) in ((300, 150, 1.0), (600, 150, 1.0), (450, 250, 0.7)):
-        s.append(f'<g transform="translate({lx} {ly}) scale({sc})"><path d="M0 -150 L0 -6" stroke="#3A2416" stroke-width="2"/><rect x="-22" y="-6" width="44" height="58" rx="18" fill="#F2B33D"/><path d="M-22 12 H22 M-22 30 H22" stroke="#C9851B" stroke-width="2"/><rect x="-12" y="-10" width="24" height="6" fill="#3A2416"/><rect x="-12" y="50" width="24" height="6" fill="#3A2416"/></g>')
+        s.append(f'<g class="a-sway a-d{lx % 3}"><g transform="translate({lx} {ly}) scale({sc})"><path d="M0 -150 L0 -6" stroke="#3A2416" stroke-width="2"/><rect x="-22" y="-6" width="44" height="58" rx="18" fill="#F2B33D"/><path d="M-22 12 H22 M-22 30 H22" stroke="#C9851B" stroke-width="2"/><rect x="-12" y="-10" width="24" height="6" fill="#3A2416"/><rect x="-12" y="50" width="24" height="6" fill="#3A2416"/></g></g>')
     gx, gy = 780, 1080
     s.append(f'<ellipse cx="{gx}" cy="{gy + 6}" rx="80" ry="10" fill="#2B1E10" opacity="0.3"/><rect x="{gx - 70}" y="{gy - 210}" width="12" height="212" fill="#4A2E1A"/><rect x="{gx + 58}" y="{gy - 210}" width="12" height="212" fill="#4A2E1A"/><rect x="{gx - 80}" y="{gy - 222}" width="160" height="16" fill="#3A2416"/>')
     s.append(f'<path d="M{gx - 20} {gy - 206} L{gx - 20} {gy - 178} M{gx + 20} {gy - 206} L{gx + 20} {gy - 178}" stroke="#3A2416" stroke-width="2"/><circle cx="{gx}" cy="{gy - 120}" r="56" fill="url(#bronze)"/><circle cx="{gx}" cy="{gy - 120}" r="40" fill="none" stroke="#7E5622" stroke-width="3"/><circle cx="{gx}" cy="{gy - 120}" r="14" fill="#E9C47A"/>')

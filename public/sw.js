@@ -1,4 +1,4 @@
-const CACHE = 'training-arc-shell-v3';
+const CACHE = 'training-arc-shell-v4';
 const SHELL = [
   './',
   'style.css',
