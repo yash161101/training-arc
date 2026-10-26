@@ -36,8 +36,10 @@ Edit `AGENTS.md`; never replace the link with a copy.
 - **Tracking shapes:** set beaten = solid yellow block, tied = half block, ghost won = empty
   dashed block. Home shows a climb (one column of blocks per recent episode, then a dashed column
   for today's target). The episode card stacks its blocks into a small tower. Boss = flag.
-- **Icon:** six yellow blocks as three steps on iron, every gap the same (owner: "make the
-  vertical lines on the icon wider, rn its uneven", 26 Oct 2026). `public/icons/`, drawn exactly.
+- **Icon:** six yellow blocks with an iron edge as three steps on a white tile, every gap the
+  same (owner picked white option B, 26 Oct 2026; earlier: "make the vertical lines on the icon
+  wider, rn its uneven"). Home screen and browser tab only; the in-app logo stays yellow on iron.
+  Drawn by `tools/icon/make.py` into `public/icons/`.
 - **Light / Dark / Auto** in Settings (owner asked for dark mode, 26 Oct 2026; Auto follows the
   phone and is the default). Stored per phone in localStorage; `js/theme.js` applies it before
   the page paints.
@@ -65,7 +67,10 @@ Edit `AGENTS.md`; never replace the link with a copy.
 - **Stay signed in on this phone** (on by default) keeps the master key in IndexedDB as a
   non-extractable key. Sessions last 180 days and renew every time the app opens, so people stay
   signed in (owner: "keep it simple, passphrase is good and then they stay signed in",
-  25 Oct 2026). Lock forgets the key. A forgotten passphrase can't be reset; the app says so at sign up.
+  25 Oct 2026). Lock forgets the key. A forgotten passphrase can't be reset; the app says so at sign up. It can be changed in Settings
+  with the current one (owner asked, 26 Oct 2026): the same master key is re-wrapped with the new
+  passphrase and a new salt, so no data is re-encrypted and other phones stay signed in (owner
+  chose that).
   If the phone refuses to store the key object, it falls back to storing the key's bytes in
   IndexedDB, and asks the browser to keep the app's storage. Settings shows "This phone stays
   signed in" or not (owner: "add a remember device? i dont wanna login everytime", 26 Oct 2026).
@@ -169,6 +174,10 @@ Edit `AGENTS.md`; never replace the link with a copy.
 - **One idea per commit.**
 
 ## Latest (start here)
+
+**26 October 2026: white icon and change passphrase (branch `white-icon-passphrase`).** Owner:
+"Have the icon to be white" and "the ability to change your password too". Icon option B (white
+tile, yellow blocks with an iron edge). Settings has Change passphrase. Checks 71/71. Not merged.
 
 **26 October 2026: the user journey, walked and fixed (PR #10, owner: "Merge"). Live.** Owner: "Go
 through the user journey using this app and fix all the complications and confusions and bugs
