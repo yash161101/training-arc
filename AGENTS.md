@@ -83,7 +83,7 @@ Edit `AGENTS.md`; never replace the link with a copy.
 - `checks/e2e.mjs`: the full browser check (see README).
 - `.github/workflows/`: `checks.yml` (browser check on every push and PR), `deploy.yml` (push to
   `main`: checks, then database migrations and deploy; skipped until the Cloudflare secrets
-  exist), `backup.yml` (weekly D1 export as a 90-day artifact). `.github/dependabot.yml`: weekly
+  exist), `backup.yml` (daily D1 export as a 60-day artifact; owner asked for daily, 26 Oct 2026). `.github/dependabot.yml`: weekly
   dependency updates.
 - `setup.sh`: one-command manual setup and deploy from the owner's Mac.
 - `public/version.json`: written at deploy time (not committed); Settings shows it.

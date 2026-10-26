@@ -11,8 +11,8 @@ Ideas: [IDEAS.md](IDEAS.md).
 
 The code lives at github.com/yash161101/training-arc. Every push runs the full browser check on
 GitHub. A push to `main` that passes deploys to Cloudflare automatically (database updates
-included), once the two Cloudflare secrets below are set. A weekly job also saves a database
-backup (encrypted data only) as a downloadable file, kept for 90 days.
+included), once the two Cloudflare secrets below are set. A daily job also saves a database
+backup (encrypted data only) as a downloadable file, kept for 60 days.
 
 ### Turn on auto-deploy (once)
 

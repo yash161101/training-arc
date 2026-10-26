@@ -2,7 +2,7 @@ name: Backup
 
 on:
   schedule:
-    - cron: "17 21 * * 0"
+    - cron: "17 21 * * *"
   workflow_dispatch:
 
 jobs:
@@ -33,4 +33,4 @@ jobs:
         with:
           name: database-backup
           path: backup-*.sql
-          retention-days: 90
+          retention-days: 60
