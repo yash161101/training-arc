@@ -126,6 +126,11 @@ Edit `AGENTS.md`; never replace the link with a copy.
 
 ## Latest (start here)
 
+**26 October 2026: the world is the Training Grounds (TG-01, agreed).** The owner loves anime
+(Naruto, Demon Slayer, DBZ) and Vishal's village, so the world is the training ground outside the
+village, built from your won blocks. See IDEAS.md TG-01. Mockups on the brand canvas, row 4,
+before any building. Stack look and dark mode are live (PR #6).
+
 **26 October 2026: the Stack look and dark mode (branch `stack-brand`).** The owner picked Stack
 and asked for dark/light mode and to deploy it. New colours, fonts, icon, blocks for every set,
 climb on home, tower on the episode card. Checks 43/43 (light and dark both run). The sign-in fix

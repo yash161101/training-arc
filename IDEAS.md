@@ -35,6 +35,7 @@ condition to revisit), **Rejected** (with the reason).
 
 | ID | Idea | Status |
 |---|---|---|
+| `TG-01` | Training Grounds: a place outside the village, built from your won blocks. Each muscle group builds its own spot (push wall, pull tower, leg stairs, arm forge), neglect grows grass over it, ghost blocks show as dashed outlines, bosses become pillars, sky follows light/dark. Plus a power level (passing 9000 is an easter egg), forms per exercise, and ranks from consistency | **Agreed** 26 Oct 2026 (owner: "TRAINING GROUND", on neglect showing: "NO I LOVE IT", on power level, forms and ranks: "LOVE ALL OF IT", "THis is it"). Mockups next |
 | `BR-01` | Stack brand: blocks as the tracking shape, yellow on concrete, new icon | **Agreed** 26 Oct 2026 (owner: "lets do stack"). Built 26 Oct 2026 |
 | `DM-01` | Dark and light mode, Auto follows the phone | **Agreed** 26 Oct 2026 (owner: "add a dark/light mode thing to it, deploy it"). Built 26 Oct 2026 |
 | `OF-01` | Offline first: the app opens and saves with no signal, and syncs by itself when back online | **Agreed** 26 Oct 2026 (owner: "its always synced and live aand even works without the internet (only syncs when internet th)"). Built 26 Oct 2026 |
@@ -79,6 +80,7 @@ mountain idea.
 
 ## Change log
 
+- **26 October 2026:** TG-01 Training Grounds agreed as the world (sibling to Vishal's village: his is where you live, yours is where you train). Anime feel from Naruto, Demon Slayer, DBZ, without their names or art. Block silhouettes rejected (owner: "sounds silly").
 - **26 October 2026:** BR-01 (Stack brand) and DM-01 (dark mode) agreed and built.
 - **26 October 2026:** OF-01 agreed and built: works offline, syncs on its own, a sync chip on
   home shows the state.
