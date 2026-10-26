@@ -172,23 +172,32 @@ def yard():
         s.append(f'<rect x="{x - 11}" y="{y - h + 62}" width="22" height="5" fill="#4A2E1A"/>')
     x, y = 930, 692
     s.append(f'<ellipse cx="{x - 8}" cy="{y + 2}" rx="22" ry="5" fill="#2B1E10" opacity="0.28"/>')
+    s.append('<g id="w-dummy" class="dummy">')
     s.append(f'<rect x="{x - 5}" y="{y - 112}" width="10" height="112" fill="url(#wood)"/><rect x="{x - 26}" y="{y - 84}" width="52" height="9" fill="url(#wood)"/>')
     s.append(f'<path d="M{x - 15} {y - 96} Q{x} {y - 104} {x + 15} {y - 96} L{x + 18} {y - 30} Q{x} {y - 22} {x - 18} {y - 30} Z" fill="#D9BC7C"/>')
     s.append(f'<path d="M{x - 16} {y - 76} Q{x} {y - 70} {x + 16} {y - 76} M{x - 17} {y - 52} Q{x} {y - 46} {x + 17} {y - 52}" stroke="#A88746" stroke-width="2" fill="none"/>')
     s.append(f'<circle cx="{x}" cy="{y - 106}" r="12" fill="#D9BC7C"/><rect x="{x - 11}" y="{y - 112}" width="22" height="5" fill="#FFC21A"/><path d="M{x + 11} {y - 110} L{x + 24} {y - 115} L{x + 22} {y - 105} Z" fill="#FFC21A"/>')
+    s.append('</g>')
     s.append('<g><rect x="958" y="650" width="4" height="42" fill="#5E3920"/><rect x="986" y="650" width="4" height="42" fill="#5E3920"/><rect x="956" y="658" width="36" height="4" fill="#6E4428"/><rect x="956" y="676" width="36" height="4" fill="#6E4428"/>'
              '<path d="M965 640 L967 690" stroke="#C9A46A" stroke-width="3"/><path d="M974 638 L975 690" stroke="#B88F55" stroke-width="3"/><path d="M983 640 L983 690" stroke="#C9A46A" stroke-width="3"/></g>')
     if True:
         s.append('<g id="w-postvines" display="none"><g stroke="#4C7A34" stroke-width="2.5" fill="none"><path d="M763 690 Q756 660 768 640 Q778 620 764 600"/><path d="M876 690 Q884 666 872 646"/></g><g fill="#5E8F3A"><circle cx="760" cy="664" r="4"/><circle cx="770" cy="636" r="4"/><circle cx="880" cy="668" r="4"/></g></g>')
     return ''.join(s)
 
+def canopy(cols):
+    out = ''
+    for cx, cy, r in [(452, 532, 24), (486, 508, 30), (528, 520, 26), (468, 552, 20), (512, 546, 22), (494, 530, 24)]:
+        out += f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="{cols[0]}"/><circle cx="{cx + r * 0.35}" cy="{cy - r * 0.35}" r="{r * 0.6}" fill="{cols[1]}"/><circle cx="{cx - r * 0.4}" cy="{cy + r * 0.3}" r="{r * 0.45}" fill="{cols[2]}"/>'
+    return out
+
 def cherry():
     s = ['<path d="M486 640 Q480 600 492 570 Q500 548 488 524" stroke="#5B3A27" stroke-width="11" fill="none" stroke-linecap="round"/>',
-         '<path d="M490 566 Q466 548 450 546" stroke="#5B3A27" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M494 548 Q518 532 532 530" stroke="#5B3A27" stroke-width="5" fill="none" stroke-linecap="round"/>']
-    for cx, cy, r in [(452, 532, 24), (486, 508, 30), (528, 520, 26), (468, 552, 20), (512, 546, 22), (494, 530, 24)]:
-        s.append(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="#F2AFC3"/><circle cx="{cx + r * 0.35}" cy="{cy - r * 0.35}" r="{r * 0.6}" fill="#F9CDDA"/><circle cx="{cx - r * 0.4}" cy="{cy + r * 0.3}" r="{r * 0.45}" fill="#E595AD"/>')
+         '<path d="M490 566 Q466 548 450 546" stroke="#5B3A27" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M494 548 Q518 532 532 530" stroke="#5B3A27" stroke-width="5" fill="none" stroke-linecap="round"/>',
+         '<path d="M488 524 Q480 506 470 500 M488 524 Q500 504 512 498 M450 546 Q440 536 436 526 M532 530 Q544 520 548 510" stroke="#5B3A27" stroke-width="3" fill="none" stroke-linecap="round"/>']
     s.append('<ellipse cx="480" cy="642" rx="40" ry="6" fill="#2B1E10" opacity="0.22"/>')
-    s.append('<g fill="#F2AFC3">' + ''.join(f'<ellipse class="a-petal a-d{i % 4} a-p{i % 3}" cx="{x}" cy="{y}" rx="3.5" ry="2.2"/>' for i, (x, y) in enumerate([(460, 540), (500, 520), (530, 545), (476, 560), (512, 500), (448, 525), (540, 528), (490, 552)])) + '</g>')
+    s.append(f'<g id="w-cb">{canopy(("#F2AFC3", "#F9CDDA", "#E595AD"))}<g fill="#F2AFC3">' + ''.join(f'<ellipse class="a-petal a-d{i % 4} a-p{i % 3}" cx="{x}" cy="{y}" rx="3.5" ry="2.2"/>' for i, (x, y) in enumerate([(460, 540), (500, 520), (530, 545), (476, 560), (512, 500), (448, 525), (540, 528), (490, 552)])) + '</g></g>')
+    s.append(f'<g id="w-cg" display="none">{canopy(("#5E9A4A", "#78B35C", "#4C8040"))}</g>')
+    s.append(f'<g id="w-ca" display="none">{canopy(("#E0782F", "#F2A641", "#C2522B"))}<g fill="#E0782F">' + ''.join(f'<ellipse class="a-petal a-d{i % 4} a-p{i % 3}" cx="{x}" cy="{y}" rx="3.5" ry="2.2"/>' for i, (x, y) in enumerate([(460, 540), (520, 530), (480, 556), (500, 510)])) + '</g></g>')
     return ''.join(s)
 
 def dojo():
@@ -273,6 +282,8 @@ def rest(name, x0, x1, base, margin=0):
         raise SystemExit(f'{name} floats: base {base:.1f} is above the hill at {top:.1f}')
     PLACED.append(name)
 
+HILL_STEPS = []
+
 def hill():
     moss = []
     s = [f'<polygon points="{pts(HILL_S)}" fill="url(#hill)"/>']
@@ -291,6 +302,7 @@ def hill():
             y = y0 + (y1 - y0) * f
             rest(f'step {n}', x, x + w, y, 3)
             steps.append((x, y, w, h))
+            HILL_STEPS.append((x, y, w, h))
             n += 1
     for i, (x, y, w, h) in enumerate(steps):
         s.append(f'<rect x="{x:.1f}" y="{y - h:.1f}" width="{w:.1f}" height="{h:.1f}" fill="url(#stone)"/><rect x="{x:.1f}" y="{y - 1.6:.1f}" width="{w:.1f}" height="1.6" fill="#5A5E65"/>')
@@ -335,13 +347,45 @@ def forge():
     s.append('<ellipse cx="2068" cy="606" rx="15" ry="5" fill="#5F636A"/><rect x="2054" y="578" width="28" height="28" fill="#6E4428"/><ellipse cx="2068" cy="578" rx="14" ry="4" fill="#8FC4D8"/>')
     return ''.join(s)
 
+def road(points, w0, w1, fill='#D7BA88', edge='#B8975F'):
+    n = len(points)
+    left, right = [], []
+    for k, (x, y) in enumerate(points):
+        a = points[max(0, k - 1)]
+        b = points[min(n - 1, k + 1)]
+        dx, dy = b[0] - a[0], b[1] - a[1]
+        L = math.hypot(dx, dy) or 1
+        nx, ny = -dy / L, dx / L
+        w = (w0 + (w1 - w0) * k / (n - 1)) / 2
+        left.append((x + nx * w, y + ny * w))
+        right.append((x - nx * w, y - ny * w))
+    poly = left + list(reversed(right))
+    out = f'<polygon points="{pts(poly)}" fill="{edge}"/>'
+    left2, right2 = [], []
+    for k, (x, y) in enumerate(points):
+        a = points[max(0, k - 1)]
+        b = points[min(n - 1, k + 1)]
+        dx, dy = b[0] - a[0], b[1] - a[1]
+        L = math.hypot(dx, dy) or 1
+        nx, ny = -dy / L, dx / L
+        w = (w0 + (w1 - w0) * k / (n - 1)) / 2 - 2.5
+        left2.append((x + nx * w, y + ny * w))
+        right2.append((x - nx * w, y - ny * w))
+    out += f'<polygon points="{pts(left2 + list(reversed(right2)))}" fill="{fill}"/>'
+    return out
+
+def curve(p0, p1, p2, n=14):
+    return [((1 - t) ** 2 * p0[0] + 2 * (1 - t) * t * p1[0] + t * t * p2[0], (1 - t) ** 2 * p0[1] + 2 * (1 - t) * t * p1[1] + t * t * p2[1]) for t in [k / n for k in range(n + 1)]]
+
 def paths():
-    return ('<path d="M1200 800 Q1210 720 1196 660 Q1192 640 1200 630" stroke="#C4A26E" stroke-width="96" fill="none" stroke-linecap="round"/>'
-            '<path d="M1200 800 Q1210 720 1196 660 Q1192 640 1200 630" stroke="#D9BE8C" stroke-width="70" fill="none" stroke-linecap="round"/>'
-            '<path d="M1196 700 Q1020 712 900 704 Q760 698 680 704" stroke="#D3B583" stroke-width="34" fill="none" stroke-linecap="round"/>'
-            '<path d="M1200 720 Q1400 740 1560 744 Q1700 744 1680 640 Q1676 616 1690 604" stroke="#D3B583" stroke-width="32" fill="none" stroke-linecap="round"/>'
-            '<path d="M1690 610 Q1900 640 2140 624" stroke="#D3B583" stroke-width="24" fill="none" stroke-linecap="round"/>'
-            '<path d="M520 694 Q470 690 430 676" stroke="#D3B583" stroke-width="22" fill="none" stroke-linecap="round"/>')
+    s = []
+    s.append(road(curve((2140, 618), (1900, 626), (1664, 612)), 22, 24))
+    s.append(road(curve((1664, 612), (1440, 630), (1240, 632)), 24, 26))
+    s.append(road(curve((1214, 704), (960, 714), (690, 702)), 34, 28))
+    s.append(road(curve((524, 698), (480, 690), (436, 676)), 24, 20))
+    s.append(road(curve((1210, 800), (1222, 700), (1200, 634)), 120, 64))
+    s.append('<g fill="#C6A673" opacity="0.8"><ellipse cx="1190" cy="760" rx="16" ry="4"/><ellipse cx="1226" cy="704" rx="10" ry="3"/><ellipse cx="900" cy="708" rx="9" ry="2.5"/><ellipse cx="1500" cy="630" rx="8" ry="2"/><ellipse cx="1960" cy="622" rx="7" ry="2"/></g>')
+    return ''.join(s)
 
 def foreground():
     random.seed(11)
@@ -366,7 +410,7 @@ def sky():
     s.append('<g id="w-sun"><circle cx="1980" cy="190" r="220" fill="url(#sunglow)"/><circle cx="1980" cy="190" r="52" fill="#FFF6DC"/></g>')
     s.append('<g id="w-nightsky" display="none"><rect width="2400" height="800" fill="#16224A" opacity="0.75"/>')
     s.append(''.join(f'<circle class="{"a-twinkle a-d" + str(i % 4) if i % 3 == 0 else ""}" cx="{random.randint(0, 2400)}" cy="{random.randint(6, 330)}" r="{random.choice([1, 1, 1.4, 1.8])}" fill="#FFFFFF" opacity="{random.choice([0.5, 0.7, 0.95])}"/>' for i in range(120)))
-    s.append('<circle cx="1980" cy="150" r="120" fill="url(#sunglow)" opacity="0.3"/><mask id="mm"><rect width="2400" height="800" fill="#FFFFFF"/><circle cx="1998" cy="136" r="38" fill="#000000"/></mask><circle cx="1980" cy="150" r="42" fill="#FFF3C9" mask="url(#mm)"/></g>')
+    s.append('<circle cx="1980" cy="150" r="120" fill="url(#sunglow)" opacity="0.3"/><mask id="mm"><rect width="2400" height="800" fill="#FFFFFF"/><circle id="w-moonshadow" cx="1998" cy="136" r="38" fill="#000000"/></mask><circle cx="1980" cy="150" r="42" fill="#FFF3C9" mask="url(#mm)"/></g>')
     s.append('<g fill="#FFFFFF" opacity="0.9"><g class="a-cloud"><ellipse cx="620" cy="110" rx="120" ry="16"/><ellipse cx="690" cy="96" rx="64" ry="20"/><ellipse cx="560" cy="100" rx="50" ry="14"/></g><g class="a-cloud a-c2"><ellipse cx="1420" cy="80" rx="140" ry="15"/><ellipse cx="1500" cy="66" rx="70" ry="20"/><ellipse cx="1360" cy="70" rx="46" ry="13"/></g><g class="a-cloud a-c3"><ellipse cx="2200" cy="120" rx="80" ry="12"/></g></g>')
     s.append('<g fill="#FFFFFF" opacity="0.54"><g class="a-cloud a-c3"><ellipse cx="1000" cy="200" rx="140" ry="8"/></g><g class="a-cloud a-c2"><ellipse cx="1760" cy="250" rx="120" ry="7"/></g></g>')
     s.append('<g id="w-birds" fill="none" stroke="#45506A" stroke-width="2" stroke-linecap="round"><g class="a-birds"><path class="a-flap" d="M1580 160 q7 -7 14 0 q7 -7 14 0"/><path class="a-flap a-d1" d="M1616 178 q5 -5 10 0 q5 -5 10 0"/><path class="a-flap a-d2" d="M1556 186 q4 -4 8 0 q4 -4 8 0"/></g></g>')
@@ -385,16 +429,87 @@ def night_overlay():
     s.append('</g>')
     return ''.join(s)
 
+def atmosphere():
+    random.seed(77)
+    s = ['<defs><linearGradient id="duskg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5E4A86" stop-opacity="0.35"/><stop offset="0.45" stop-color="#FF8A50" stop-opacity="0.35"/><stop offset="0.75" stop-color="#FFB86B" stop-opacity="0.18"/><stop offset="1" stop-color="#FF9A50" stop-opacity="0.1"/></linearGradient>'
+         '<linearGradient id="pinkg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF7EB0" stop-opacity="0.35"/><stop offset="0.6" stop-color="#FFB3C9" stop-opacity="0.3"/><stop offset="1" stop-color="#FFD9C2" stop-opacity="0.08"/></linearGradient></defs>']
+    s.append('<g id="w-dusk" display="none"><rect width="2400" height="800" fill="url(#duskg)"/></g>')
+    s.append('<g id="w-pink" display="none"><rect width="2400" height="800" fill="url(#pinkg)"/></g>')
+    s.append('<g id="w-monsoon" display="none"><rect y="560" width="2400" height="240" fill="#2F8F3A" opacity="0.1"/></g>')
+    s.append('<g id="w-leaves" display="none" fill="#E0782F">' + ''.join(f'<ellipse cx="{x}" cy="{y}" rx="4" ry="2.4" transform="rotate({random.randint(0, 180)} {x} {y})"/>' for x, y in [(450, 650), (470, 660), (520, 648), (560, 680), (600, 690), (1180, 700), (1240, 760), (900, 712), (980, 708), (700, 706)]) + '</g>')
+    clouds = ''.join(f'<g class="a-cloud a-c{k % 3 + 1}"><ellipse cx="{x}" cy="{y}" rx="{rx}" ry="{rx * 0.22:.0f}"/><ellipse cx="{x + rx * 0.4:.0f}" cy="{y - rx * 0.12:.0f}" rx="{rx * 0.55:.0f}" ry="{rx * 0.24:.0f}"/></g>' for k, (x, y, rx) in enumerate([(200, 120, 220), (720, 90, 260), (1260, 130, 240), (1760, 100, 280), (2260, 140, 220)]))
+    s.append(f'<g id="w-cloudy" display="none"><rect width="2400" height="800" fill="#7E8A9A" opacity="0.22"/><g fill="#C3CAD4" opacity="0.95">{clouds}</g></g>')
+    s.append('<defs><linearGradient id="fogband" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F2F5F8" stop-opacity="0"/><stop offset="0.5" stop-color="#F2F5F8" stop-opacity="0.75"/><stop offset="1" stop-color="#F2F5F8" stop-opacity="0"/></linearGradient>'
+             '<radialGradient id="puff" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#FFFFFF" stop-opacity="1"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient></defs>')
+    s.append('<g id="w-fog" display="none"><rect width="2400" height="800" fill="#E6EBF0" opacity="0.28"/><g class="a-cloud"><rect x="-100" y="430" width="2600" height="120" fill="url(#fogband)"/></g><g class="a-cloud a-c2"><rect x="-100" y="540" width="2600" height="90" fill="url(#fogband)"/></g><g class="a-cloud a-c3"><rect x="-100" y="360" width="2600" height="80" fill="url(#fogband)" opacity="0.7"/></g></g>')
+    rain = []
+    for col in range(110):
+        x = col * 22 + random.uniform(0, 18)
+        y0 = random.uniform(0, 80)
+        for k in range(-1, 11):
+            y = y0 + k * 80
+            rain.append(f'M{x:.0f} {y:.0f} l-5 18')
+    s.append(f'<g id="w-rain" display="none"><rect width="2400" height="800" fill="#4A5566" opacity="0.3"/><path class="a-rain" d="{" ".join(rain)}" stroke="#DCE6F0" stroke-width="1.4" opacity="0.55"/>'
+             '<g fill="#9FC6DA" opacity="0.55"><ellipse cx="1200" cy="740" rx="40" ry="6"/><ellipse cx="930" cy="712" rx="26" ry="4"/><ellipse cx="1500" cy="632" rx="22" ry="3"/><ellipse cx="1214" cy="672" rx="20" ry="3"/></g>'
+             '<rect class="a-flash" id="w-flash" width="2400" height="800" fill="#FFFFFF" opacity="0"/></g>')
+    snow = []
+    for col in range(90):
+        x = col * 27 + random.uniform(0, 20)
+        y0 = random.uniform(0, 100)
+        for k in range(-1, 9):
+            snow.append(f'<circle cx="{x + random.uniform(-6, 6):.0f}" cy="{y0 + k * 100:.0f}" r="{random.choice([1.5, 2, 2.5])}"/>')
+    s.append(f'<g id="w-snow" display="none"><rect width="2400" height="800" fill="#DDE5EE" opacity="0.2"/><g class="a-snow" fill="#FFFFFF" opacity="0.85">{"".join(snow)}</g></g>')
+    random.seed(88)
+    cols = ['#FF4FA3', '#3FCB6B', '#FFC21A', '#4F8BFF', '#FF7A2E']
+    holi = ''
+    for x, y, r in [(1560, 712, 20), (1610, 690, 14), (1640, 726, 16), (1760, 680, 18), (1790, 702, 12), (772, 650, 10), (820, 656, 10), (868, 650, 10), (1190, 752, 26), (1236, 724, 18), (1168, 706, 16), (980, 712, 14), (1320, 634, 12), (1460, 640, 12), (700, 706, 12)]:
+        c = random.choice(cols)
+        holi += ''.join(f'<circle cx="{x + random.uniform(-r, r):.0f}" cy="{y + random.uniform(-r, r) * 0.35:.0f}" r="{random.uniform(r * 0.25, r * 0.6):.1f}" fill="{c}" opacity="0.85"/>' for _ in range(6))
+    puffs = ''
+    for k, (x, y) in enumerate([(800, 600), (1180, 650), (1580, 640), (1780, 620)]):
+        c = cols[k % len(cols)]
+        puffs += f'<g class="a-smoke a-d{k % 4}"><circle cx="{x}" cy="{y}" r="46" fill="{c}" opacity="0.32"/><circle cx="{x + 28}" cy="{y - 22}" r="30" fill="{c}" opacity="0.28"/><circle cx="{x - 26}" cy="{y - 14}" r="26" fill="{c}" opacity="0.25"/></g>'
+    s.append(f'<g id="w-holi" display="none">{holi}{puffs}</g>')
+    koi = '<g class="a-koi"><g transform="translate(462 664) rotate(18)"><ellipse cx="0" cy="0" rx="12" ry="5" fill="#FFB020"/><path d="M-11 0 L-20 -6 L-18 0 L-20 6 Z" fill="#FF8A1F"/><circle cx="6" cy="-1" r="1.2" fill="#1D1E21"/><ellipse cx="2" cy="-2" rx="4" ry="2" fill="#FFF2D0" opacity="0.7"/></g></g>'
+    s.append(f'<g id="w-koi" display="none">{koi}<g class="a-koi a-k2">{koi}</g></g>')
+    gx, gy = 1935, 326
+    s.append(f'<g id="w-owl" display="none"><ellipse cx="{gx - 30}" cy="{gy - 106}" rx="9" ry="12" fill="#7A5A3A"/><circle cx="{gx - 30}" cy="{gy - 118}" r="8" fill="#8A6A48"/><path d="M{gx - 37} {gy - 124} l2 -6 l3 5 Z M{gx - 23} {gy - 124} l-2 -6 l-3 5 Z" fill="#7A5A3A"/>'
+             f'<g class="a-blink"><circle cx="{gx - 33}" cy="{gy - 119}" r="2.6" fill="#FFC21A"/><circle cx="{gx - 27}" cy="{gy - 119}" r="2.6" fill="#FFC21A"/></g><path d="M{gx - 31} {gy - 115} l1 2 l1 -2 Z" fill="#3A2416"/></g>')
+    s.append('<g id="w-cat" display="none"><g class="a-breathe"><ellipse cx="1262" cy="622" rx="18" ry="8" fill="#E0A060"/><circle cx="1248" cy="618" r="7" fill="#E0A060"/><path d="M1243 613 l1 -6 l4 4 Z M1250 612 l2 -6 l3 5 Z" fill="#E0A060"/><path d="M1280 624 Q1292 626 1288 616" stroke="#E0A060" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M1252 618 h-6" stroke="#8A5A2A" stroke-width="1.2"/><path d="M1258 616 q6 -3 14 0 M1262 622 q6 -2 12 0" stroke="#C07C40" stroke-width="2" fill="none"/></g></g>')
+    s.append('<g id="w-banner9000" display="none"><g class="a-flag"><path d="M1454 366 L1494 366 L1494 520 L1474 508 L1454 520 Z" fill="#1D1E21"/><path d="M1454 366 L1494 366 L1494 520 L1474 508 L1454 520 Z" fill="none" stroke="#FFC21A" stroke-width="3"/><g fill="#FFC21A"><rect x="1462" y="410" width="7" height="7"/><rect x="1471" y="410" width="7" height="7"/><rect x="1471" y="401" width="7" height="7"/><rect x="1480" y="410" width="7" height="7"/><rect x="1480" y="401" width="7" height="7"/><rect x="1480" y="392" width="7" height="7"/></g><text x="1474" y="452" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-weight="600" font-size="11" fill="#FFC21A">9000</text></g></g>')
+    return ''.join(s)
+
+def lights():
+    s = []
+    diyas = [(1000 + k * 34, 600) for k in range(13)] + [(1160 + k * 26, 642) for k in range(4)]
+    diyas += [(x + w / 2, y) for i, (x, y, w, h) in enumerate(HILL_STEPS) if i % 3 == 0]
+    d = ''
+    for x, y in diyas:
+        d += f'<g><circle class="a-glow" cx="{x:.0f}" cy="{y - 5:.0f}" r="10" fill="url(#glow)"/><path d="M{x - 5:.0f} {y - 1:.0f} Q{x:.0f} {y + 4:.0f} {x + 5:.0f} {y - 1:.0f} Z" fill="#B5653A"/><ellipse class="a-flicker" cx="{x:.0f}" cy="{y - 5:.0f}" rx="1.8" ry="3.6" fill="#FFC75A"/></g>'
+    bulbs = ''.join(f'<circle class="a-twinkle a-d{k % 4}" cx="{986 + k * 15}" cy="{455 - 6 * math.sin(k / 29 * math.pi):.0f}" r="2.6" fill="{["#FFC21A", "#FF7A2E", "#FFF2B0"][k % 3]}"/>' for k in range(29))
+    s.append(f'<g id="w-diwali" display="none">{d}<path d="M986 455 Q1200 443 1414 455" stroke="#3A2416" stroke-width="1" fill="none"/>{bulbs}</g>')
+    fw = ''
+    for k, (x, y, c) in enumerate([(640, 150, '#FFC21A'), (1250, 110, '#FF4FA3'), (1700, 170, '#7FE0FF'), (980, 200, '#FFFFFF'), (2100, 120, '#9CFF7A')]):
+        rays = ''.join(f'<path d="M{x} {y} L{x + 46 * math.cos(a * math.pi / 8):.0f} {y + 46 * math.sin(a * math.pi / 8):.0f}"/>' for a in range(16))
+        fw += f'<g class="a-burst a-b{k % 5}" stroke="{c}" stroke-width="2.4" stroke-linecap="round">{rays}<circle cx="{x}" cy="{y}" r="4" fill="{c}" stroke="none"/></g>'
+    s.append(f'<g id="w-fireworks" display="none">{fw}</g>')
+    return ''.join(s)
+
 def hotspots():
-    return ('<rect class="w-hot" data-act="go" data-view="dojo" x="960" y="170" width="560" height="480" fill="#000000" fill-opacity="0"><title>Go inside the dojo</title></rect>'
-            '<rect class="w-hot" data-act="go" data-view="climb" x="1560" y="180" width="560" height="440" fill="#000000" fill-opacity="0"><title>Climb the hill</title></rect>')
+    return ('<rect class="w-hot" data-act="go" data-view="cliff" x="0" y="100" width="440" height="560" fill="#000000" fill-opacity="0"><title>Climb the cliff</title></rect>'
+            '<rect class="w-hot" data-act="go" data-view="yard" x="740" y="560" width="160" height="140" fill="#000000" fill-opacity="0"><title>Go to the yard</title></rect>'
+            '<rect class="w-hot" data-act="poke" x="900" y="570" width="64" height="130" fill="#000000" fill-opacity="0"><title>Poke the dummy</title></rect>'
+            '<rect class="w-hot" data-act="go" data-view="forge" x="2060" y="400" width="280" height="220" fill="#000000" fill-opacity="0"><title>Go to the forge</title></rect>'
+            '<rect class="w-hot" data-act="go" data-view="dojo" x="960" y="170" width="560" height="480" fill="#000000" fill-opacity="0"><title>Go inside the dojo</title></rect>'
+            '<rect class="w-hot" data-act="go" data-view="climb" x="1560" y="180" width="500" height="430" fill="#000000" fill-opacity="0"><title>Climb the hill</title></rect>'
+            '<rect class="w-hot" data-act="go" data-view="boulders" x="1490" y="600" width="490" height="160" fill="#000000" fill-opacity="0"><title>See the boulders</title></rect>')
 
 def build():
     body = [sky(), mountains(), village(), '<rect x="0" y="380" width="2400" height="220" fill="url(#haze)"/>',
             forest(430, 2400, lambda x: 560 + 14 * math.sin(x / 160), 50, 86, 5, 'url(#forestFar)'),
             '<path d="M0 620 Q600 590 1200 600 Q1800 610 2400 596 L2400 800 L0 800 Z" fill="url(#ground)"/>',
             hill(), cliff(), waterfall(), stream(), bridge(), paths(), cherry(), yard(), dojo(), boulders(), forge(), foreground(),
-            '<g id="w-warm"><rect width="2400" height="800" fill="#FFB25A" opacity="0.05"/></g>', night_overlay(), hotspots()]
+            '<g id="w-warm"><rect width="2400" height="800" fill="#FFB25A" opacity="0.05"/></g>', atmosphere(), night_overlay(), lights(), hotspots()]
     return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" class="scene valley" role="img" aria-label="Your training grounds">{defs()}{"".join(body)}</svg>'
 
 if __name__ == '__main__':
