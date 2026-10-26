@@ -20,7 +20,8 @@ const page = await ctx.newPage();
 const errors = [];
 page.on('console', (m) => { if (m.type() === 'error' && !/status of (401|403|404)|ERR_INTERNET_DISCONNECTED|net::ERR_FAILED/.test(m.text())) errors.push(m.text()); });
 page.on('pageerror', (e) => errors.push(e.message));
-page.on('dialog', (d) => d.accept());
+let lastDialog = '';
+page.on('dialog', (d) => { lastDialog = d.message(); d.accept(); });
 const shot = (n) => page.screenshot({ path: SHOTS + (process.env.SCHEME === 'dark' ? 'dark-' : '') + n + '.png' });
 
 async function finishEpisode() {
@@ -58,6 +59,7 @@ await page.click('button[type="submit"]');
 await page.waitForSelector('.hero', { timeout: 30000 });
 await page.waitForTimeout(1400);
 ok('Sign up lands on home with Ep. 1', (await page.textContent('.ep-num')).trim() === 'Ep. 1');
+ok('First run explains how it works', (await page.textContent('.guide')).includes('ghost'));
 await shot('02-home-new');
 
 await page.click('[data-act="new"]');
@@ -70,6 +72,9 @@ await page.click('[data-act="start"]');
 await page.waitForSelector('.workout');
 ok('Workout opens with 2 exercises', (await page.$$('.ex')).length === 2);
 
+await page.click('[data-act="done"][data-i="1"][data-j="0"]');
+await page.waitForSelector('.toast.show');
+ok('A weighted set needs a weight', (await page.textContent('.toast')).includes('weight') && !!(await page.$('[data-act="done"][data-i="1"][data-j="0"]')));
 const kg = page.locator('input[data-field="w"][data-i="1"][data-j="0"]');
 await kg.fill('12.5');
 await kg.dispatchEvent('change');
@@ -113,7 +118,13 @@ await page.waitForSelector('.hero');
 ok('Boss waiting banner on home', !!(await page.$('.boss-banner')), (await page.$('.boss-banner')) ? await page.textContent('.boss-banner') : '');
 await shot('09-home-boss');
 
+await page.click('[data-act="fight"]');
+await page.waitForSelector('.boss');
+ok('Fight it starts a workout with the boss', !!(await page.$('[data-act="boss"]')));
+await page.click('[data-act="leave"]');
+await page.waitForSelector('.resume');
 await page.click('[data-act="repeat"]');
+ok('Starting over an unfinished workout asks first', lastDialog.includes('unfinished'));
 await page.waitForSelector('.boss');
 await page.click('[data-act="boss"]');
 await shot('10-boss-fight');

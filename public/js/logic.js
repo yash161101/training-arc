@@ -166,7 +166,7 @@ export function applyEpisode(summary, ep, find) {
     if (it.boss) s.boss[it.exId] = { date: ep.date, win: it.boss.win };
   }
   s.recent = [
-    { n: ep.n, id: ep.id, date: ep.date, t: ep.startedAt, perfect: ep.score.compared > 0 && ep.score.you === ep.score.compared, title: ep.title, you: ep.score.you, ghost: ep.score.ghost, ex: ep.items.map((i) => i.exId) },
+    { n: ep.n, id: ep.id, date: ep.date, t: ep.startedAt, perfect: ep.score.compared > 0 && ep.score.you === ep.score.compared, title: ep.title, you: ep.score.you, ghost: ep.score.ghost, tie: ep.score.tie || 0, sets: ep.sets, ex: ep.items.map((i) => i.exId) },
     ...s.recent.filter((r) => r.n !== ep.n && !(ep.id && r.id === ep.id)),
   ].slice(0, 1000);
   return s;

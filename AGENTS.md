@@ -90,7 +90,7 @@ Edit `AGENTS.md`; never replace the link with a copy.
   - Places: Back = cliff and rope, Chest and Shoulders = posts, Arms = forge, Legs = hill.
   - Inside, each place fills up: climb 130 steps (3 per leg exercise, +1 per new best), cliff
     100 grips (3 per pull exercise, +1), yard 40 rope wraps on 8 posts (1 per push exercise, +1),
-    forge 24 pieces on the rack (1 per arm exercise, +1), boulder garden 12 spots (one split
+    forge 24 pieces on the rack (1 per arm exercise, +1), boulder garden 11 spots (one split
     boulder per boss beaten, carved with its episode; a waiting boss stands whole with a flag).
   - Steps on the climb: each leg exercise in a session lays 3, a new best lays 1 more (130 to the
     gate). The next steps show dashed.
@@ -169,6 +169,22 @@ Edit `AGENTS.md`; never replace the link with a copy.
 - **One idea per commit.**
 
 ## Latest (start here)
+
+**26 October 2026: the user journey, walked and fixed (branch `journey-polish`).** Owner: "Go
+through the user journey using this app and fix all the complications and confusions and bugs
+etc as you encounter them. Make the app pretty and aesthetic while you're at it". Walked sign up,
+first workout, repeats, a boss, history, progress, every place and settings at phone size in light
+and dark. Fixed: a new user now gets a three-step "How it works" card; Repeat or New session over an
+unfinished workout asks before throwing it away (it used to be lost silently); the boss banner has a
+"Fight it" button; weighted sets need a weight before Done; workout errors show as a toast next to
+your thumb instead of at the bottom of the page; set rows fit on one line; "Ghost +1 rep" now reads
+"Short 1 rep"; first sessions say "First time" instead of "New best" on everything; logged sets
+show as outlined blocks, so a first episode has a tower too; the home chart shows your last episodes
+(beaten, tied, lost) with a caption; history rows show ties and a small block strip; the picker
+keeps your picks in order at the top, groups the list, and says "Start Ep. N · 3 exercises"; place
+chips are a tidy grid with what each place is for; tied stamps read well in dark mode; "Return" is
+now "Sign in". Episodes saved from now on also keep their tie and set counts. Checks 67/67 in light
+and dark. Not merged yet.
 
 **26 October 2026: the whole world is live (PR #9, owner: "Merge").** Owner asked for the other
 inside scenes, the sky to follow the real city, cleaner roads, and picked every real-world event
