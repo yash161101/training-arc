@@ -250,3 +250,7 @@ button:disabled { cursor: default; opacity: .55; }
 .sync-chip.wait { background: var(--ghost-bg); color: var(--ghost); border: 2px dashed var(--ghost); }
 .sync-note { margin: 10px 0 0; font-size: 13px; font-weight: 700; color: var(--mute); }
 .sync-note.wait { color: var(--ghost); }
+
+.remembered { font-weight: 600; font-size: 14px; margin: 4px 0 12px; }
+.remembered::before { content: ''; display: inline-block; width: 10px; height: 10px; margin-right: 8px; background: var(--red); vertical-align: 0; }
+.remembered.ok::before { background: var(--ink); }

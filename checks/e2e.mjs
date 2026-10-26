@@ -177,6 +177,13 @@ ok('Syncs by itself when back online', synced);
 ok('No leftover unfinished workout', !(await page.$('[data-act="resume"]')));
 
 const ctx3 = await browser.newContext({ viewport: { width: 390, height: 844 } });
+await ctx3.addInitScript(() => {
+  const put = IDBObjectStore.prototype.put;
+  IDBObjectStore.prototype.put = function (v, k) {
+    if (v && v.key instanceof CryptoKey) throw new DOMException('An object could not be cloned.', 'DataCloneError');
+    return put.call(this, v, k);
+  };
+});
 const p3 = await ctx3.newPage();
 p3.on('dialog', (d) => d.accept());
 await p3.goto(BASE);
@@ -188,9 +195,15 @@ await p3.click('button[type="submit"]');
 await p3.waitForSelector('.hero', { timeout: 30000 });
 ok('Another device sees the offline episode', (await p3.textContent('.ep-num')).trim() === 'Ep. 6');
 ok('Another device has no stale unfinished workout', !(await p3.$('[data-act="resume"]')));
+await p3.reload();
+await p3.waitForSelector('.hero', { timeout: 20000 });
+ok('Stays signed in when the phone refuses to store the key', (await p3.textContent('.ep-num')).trim() === 'Ep. 6');
+await p3.click('[data-act="go"][data-view="settings"]');
+ok('Settings says this phone stays signed in', (await p3.textContent('.remembered')).includes('stays signed in'));
 await ctx3.close();
 
 await page.click('[data-act="go"][data-view="settings"]');
+ok('Settings says this phone stays signed in', (await page.textContent('.remembered')).includes('stays signed in'));
 await page.click('[data-act="lock"]');
 await page.waitForSelector('form[data-form="return"]');
 await page.fill('input[name="name"]', NAME);
