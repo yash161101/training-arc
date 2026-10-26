@@ -53,6 +53,11 @@ export function importMaster(raw) {
   return crypto.subtle.importKey('raw', fromB64(raw), { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
 }
 
+export async function wrapMaster(kek, key) {
+  const iv = randomBytes(12);
+  return { wrappedKey: toB64(await crypto.subtle.wrapKey('raw', key, kek, { name: 'AES-GCM', iv })), wrapIv: toB64(iv) };
+}
+
 export async function createMaster(kek) {
   const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
   const iv = randomBytes(12);

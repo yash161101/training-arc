@@ -148,17 +148,8 @@ async function prelogin(req, env, ip) {
   return json({ salt: fake.slice(0, 24) });
 }
 
-async function login(req, env, ip) {
-  await limit(env, 'login:' + ip, 30, 10 * 60 * 1000);
-  const b = await readJson(req);
-  const name = cleanName(b.name);
-  const authKey = b64Field(b.authKey, 40, 64);
-  const user = await env.DB.prepare('SELECT * FROM users WHERE name = ?').bind(name).first();
+async function checkAuth(env, user, authKey, wrong) {
   const now = Date.now();
-  if (!user) {
-    await sha(authKey);
-    throw new HttpError(401, 'Wrong name or passphrase');
-  }
   if (user.locked_until > now) {
     const mins = Math.ceil((user.locked_until - now) / 60000);
     throw new HttpError(429, `Too many wrong tries. Try again in ${mins} min.`);
@@ -167,9 +158,50 @@ async function login(req, env, ip) {
     const fails = user.fails + 1;
     await env.DB.prepare('UPDATE users SET fails = ?, locked_until = ? WHERE id = ?')
       .bind(fails >= 5 ? 0 : fails, fails >= 5 ? now + 15 * 60000 : 0, user.id).run();
-    throw new HttpError(401, 'Wrong name or passphrase');
+    throw new HttpError(401, wrong);
   }
   if (user.fails) await env.DB.prepare('UPDATE users SET fails = 0 WHERE id = ?').bind(user.id).run();
+}
+
+async function accountKey(req, env, ip) {
+  await limit(env, 'rekey:' + ip, 20, 10 * 60 * 1000);
+  const s = await session(req, env);
+  const authKey = b64Field((await readJson(req)).authKey, 40, 64);
+  const user = await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(s.userId).first();
+  if (!user) throw new HttpError(401, 'Signed out');
+  await checkAuth(env, user, authKey, 'That isn\u2019t your current passphrase');
+  return json({ wrappedKey: user.wrapped_key, wrapIv: user.wrap_iv });
+}
+
+async function changePassphrase(req, env, ip) {
+  await limit(env, 'rekey:' + ip, 20, 10 * 60 * 1000);
+  const s = await session(req, env);
+  const b = await readJson(req);
+  const authKey = b64Field(b.authKey, 40, 64);
+  const salt = b64Field(b.salt, 16, 64);
+  const newAuthKey = b64Field(b.newAuthKey, 40, 64);
+  const wrappedKey = b64Field(b.wrappedKey, 40, 128);
+  const wrapIv = b64Field(b.wrapIv, 16, 24);
+  const user = await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(s.userId).first();
+  if (!user) throw new HttpError(401, 'Signed out');
+  await checkAuth(env, user, authKey, 'That isn\u2019t your current passphrase');
+  const res = await env.DB.prepare('UPDATE users SET salt = ?, auth_hash = ?, wrapped_key = ?, wrap_iv = ? WHERE id = ? AND auth_hash = ?')
+    .bind(salt, await sha(newAuthKey), wrappedKey, wrapIv, user.id, user.auth_hash).run();
+  if (!res.meta.changes) throw new HttpError(409, 'Your passphrase just changed somewhere else. Try again.');
+  return json({ ok: true });
+}
+
+async function login(req, env, ip) {
+  await limit(env, 'login:' + ip, 30, 10 * 60 * 1000);
+  const b = await readJson(req);
+  const name = cleanName(b.name);
+  const authKey = b64Field(b.authKey, 40, 64);
+  const user = await env.DB.prepare('SELECT * FROM users WHERE name = ?').bind(name).first();
+  if (!user) {
+    await sha(authKey);
+    throw new HttpError(401, 'Wrong name or passphrase');
+  }
+  await checkAuth(env, user, authKey, 'Wrong name or passphrase');
   return json(
     { userId: user.id, name: user.name, wrappedKey: user.wrapped_key, wrapIv: user.wrap_iv },
     200,
@@ -308,6 +340,8 @@ async function route(req, env, url) {
   if (p === '/api/me' && m === 'GET') return me(req, env);
   if (p === '/api/sky' && m === 'GET') return sky(req, env);
   if (p === '/api/account/delete' && m === 'POST') return deleteAccount(req, env);
+  if (p === '/api/account/key' && m === 'POST') return accountKey(req, env, ip);
+  if (p === '/api/account/passphrase' && m === 'POST') return changePassphrase(req, env, ip);
   if (p === '/api/docs' && m === 'GET') return listDocs(req, env, url);
   const d = /^\/api\/doc\/([^/]+)$/.exec(p);
   if (d && DOC_RE.test(d[1])) {
