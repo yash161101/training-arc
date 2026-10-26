@@ -1,5 +1,5 @@
 import { api, ApiError } from './api.js';
-import { seal, unseal, deriveFromOath, createMaster, unwrapMaster, exportMaster, importMaster, toB64, randomBytes } from './crypto.js';
+import { seal, unseal, deriveFromOath, createMaster, wrapMaster, unwrapMaster, exportMaster, importMaster, toB64, randomBytes } from './crypto.js';
 import { kvGet, kvSet, kvDel, kvClear } from './keystore.js';
 import { EMPTY_SUMMARY, applyEpisode } from './logic.js';
 import { findExercise } from './exercises.js';
@@ -133,6 +133,18 @@ export async function lock() {
   } catch {}
   await kvClear();
   reset();
+}
+
+export async function changeOath(oldOath, newOath) {
+  const { salt } = await api('/api/prelogin', { method: 'POST', body: { name: S.name } });
+  const old = await deriveFromOath(oldOath, salt);
+  const cur = await api('/api/account/key', { method: 'POST', body: { authKey: old.authKey } });
+  const master = await unwrapMaster(old.kek, cur.wrappedKey, cur.wrapIv, true);
+  const newSalt = toB64(randomBytes(16));
+  const neu = await deriveFromOath(newOath, newSalt);
+  const wrapped = await wrapMaster(neu.kek, master);
+  await unwrapMaster(neu.kek, wrapped.wrappedKey, wrapped.wrapIv);
+  await api('/api/account/passphrase', { method: 'POST', body: { authKey: old.authKey, salt: newSalt, newAuthKey: neu.authKey, ...wrapped } });
 }
 
 export async function destroy(oath) {

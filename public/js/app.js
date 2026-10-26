@@ -1,8 +1,8 @@
 import {
   session, restore, join, enter, lock, destroy, loadSummary, saveEpisode, addCustom,
-  getEpisode, loadDraft, saveDraft, clearDraft, exportAll, onSync, syncNow, pendingCount, retryDraft,
+  getEpisode, loadDraft, saveDraft, clearDraft, exportAll, onSync, syncNow, pendingCount, retryDraft, changeOath,
 } from './store.js';
-import { oathProblem } from './crypto.js';
+import { oathProblem, normalizeOath } from './crypto.js';
 import { GROUPS, allExercises, findExercise } from './exercises.js';
 import {
   compare, fmtSet, fmtKg, diffText, bossFor, ghostSets, newItem, scoreDraft, buildEpisode, templates, metric,
@@ -663,6 +663,16 @@ function viewSettings() {
     <span class="kicker">Appearance</span>
     <div class="seg" role="group" aria-label="Appearance">${[['auto', 'Auto'], ['light', 'Light'], ['dark', 'Dark']].map(([k, l]) => `<button data-act="theme" data-theme="${k}" class="${theme() === k ? 'on' : ''}" aria-pressed="${theme() === k}">${l}</button>`).join('')}</div>
     <p class="hint">Auto follows your phone.</p>
+    <span class="kicker">Passphrase</span>
+    ${st.changeOath ? `<form class="card form" data-form="change-oath" novalidate>
+      <label class="field"><span>Current passphrase</span><input name="old" type="${st.showOath ? 'text' : 'password'}" autocomplete="current-password" spellcheck="false" required></label>
+      <label class="field"><span>New passphrase</span><input name="oath" type="${st.showOath ? 'text' : 'password'}" autocomplete="new-password" spellcheck="false" placeholder="At least 10 characters" required></label>
+      <label class="field"><span>Confirm new passphrase</span><input name="oath2" type="${st.showOath ? 'text' : 'password'}" autocomplete="new-password" spellcheck="false" required></label>
+      <button type="button" class="link" data-act="show-oath">${st.showOath ? 'Hide' : 'Show'}</button>
+      <p class="hint">Your data stays as it is. Phones already signed in stay signed in. New sign-ins need the new passphrase.</p>
+      ${errBox()}
+      <div class="row-btns"><button class="btn primary" type="submit" ${st.busy ? 'disabled' : ''}>${st.busy ? esc(st.busy) : 'Change it'}</button><button class="btn outline" type="button" data-act="change-off">Cancel</button></div>
+    </form>` : `<button class="btn outline" data-act="change-on">Change passphrase</button>`}
     <button class="btn black" data-act="lock">Lock this phone</button>
     <p class="hint">Signs out here and forgets the key. You'll need your passphrase to get back in.</p>
     <button class="btn outline" data-act="export">Download my data</button>
@@ -723,6 +733,7 @@ function go(view) {
   st.view = view;
   st.err = '';
   st.confirmDelete = false;
+  st.changeOath = false;
   render();
   window.scrollTo(0, 0);
 }
@@ -951,7 +962,9 @@ const actions = {
       render();
     }
   },
-  'delete-on': () => { st.confirmDelete = true; st.err = ''; render(); },
+  'change-on': () => { st.changeOath = true; st.confirmDelete = false; st.err = ''; render(); },
+  'change-off': () => { st.changeOath = false; st.err = ''; render(); },
+  'delete-on': () => { st.confirmDelete = true; st.changeOath = false; st.err = ''; render(); },
   'delete-off': () => { st.confirmDelete = false; st.err = ''; render(); },
 };
 
@@ -1035,6 +1048,29 @@ app.addEventListener('submit', async (e) => {
       st.picker.sel.push(ex.id);
       render();
     } catch (err) {
+      st.err = err.message;
+      render();
+    }
+    return;
+  }
+  if (kind === 'change-oath') {
+    const old = v('old'), oath = v('oath');
+    if (!old.trim()) st.err = 'Enter your current passphrase.';
+    else if (oathProblem(oath)) st.err = oathProblem(oath);
+    else if (oath !== v('oath2')) st.err = 'The new passphrases don’t match.';
+    else if (normalizeOath(oath) === normalizeOath(old)) st.err = 'That’s the same as your current one.';
+    if (st.err) { render(); return; }
+    st.busy = 'Changing…';
+    render();
+    try {
+      await changeOath(old, oath);
+      st.busy = '';
+      st.changeOath = false;
+      st.showOath = false;
+      render();
+      stampOverlay('Passphrase changed');
+    } catch (err) {
+      st.busy = '';
       st.err = err.message;
       render();
     }
