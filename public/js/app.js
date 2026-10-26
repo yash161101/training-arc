@@ -51,33 +51,45 @@ function mark(cls = '') {
 }
 
 function blk(t, x, y, b) {
+  if (t === 'logged') return `<rect class="b-box" x="${x + 1}" y="${y + 1}" width="${b - 2}" height="${b - 2}"></rect>`;
   if (t === 'half') return `<rect class="b-half" x="${x + 1}" y="${y + b / 2}" width="${b - 2}" height="${b / 2 - 1}"></rect><rect class="b-box" x="${x + 1}" y="${y + 1}" width="${b - 2}" height="${b - 2}"></rect>`;
   return `<rect class="b-${t === 'ghost' ? 'ghost' : 'you'}" x="${x + 1}" y="${y + 1}" width="${b - 2}" height="${b - 2}"></rect>`;
+}
+
+function epParts(e) {
+  const you = e.you || 0, ghost = e.ghost || 0, tie = e.tie || 0;
+  const logged = Math.max(0, (e.sets || 0) - you - ghost - tie);
+  return { you, tie, ghost, logged };
 }
 
 function climb(recent) {
   const eps = recent.slice(0, 6).reverse();
   if (!eps.length) return mark('climb-mark');
-  const cols = eps.map((e) => ({ t: 'you', n: e.you || 0 }));
-  cols.push({ t: 'ghost', n: Math.max(1, recent[0].you || 0) });
-  const b = 16, gap = 3, rows = 6;
-  const most = Math.max(...cols.map((c) => c.n));
-  const k = most > rows ? rows / most : 1;
+  const b = 14, gap = 3, rows = 6;
+  const cols = eps.map((e) => {
+    const p = epParts(e);
+    const total = p.you + p.tie + p.ghost + p.logged;
+    const k = total > rows ? rows / total : 1;
+    const out = [];
+    for (const t of ['you', 'half', 'ghost', 'logged']) {
+      const n = p[t === 'half' ? 'tie' : t];
+      const m = n ? Math.max(1, Math.round(n * k)) : 0;
+      for (let i = 0; i < m && out.length < rows; i++) out.push(t);
+    }
+    return out;
+  });
   const h = rows * (b + gap) - gap;
   let out = '';
-  cols.forEach((c, i) => {
-    const n = c.n ? Math.max(1, Math.round(c.n * k)) : 0;
-    for (let r = 0; r < n; r++) out += blk(c.t, i * (b + gap), h - (r + 1) * b - r * gap, b);
-  });
+  cols.forEach((c, i) => c.forEach((t, r) => { out += blk(t, i * (b + gap), h - (r + 1) * b - r * gap, b); }));
   const w = cols.length * (b + gap) - gap;
   out += `<rect class="b-line" x="0" y="${h + 2}" width="${w}" height="2"></rect>`;
-  return `<svg class="climb" width="${w}" height="${h + 4}" viewBox="0 0 ${w} ${h + 4}" role="img" aria-label="Sets you beat in your last ${eps.length} episodes, then today's target">${out}</svg>`;
+  return `<figure class="climb-fig"><svg class="ep-chart" width="${w}" height="${h + 4}" viewBox="0 0 ${w} ${h + 4}" role="img" aria-label="Your last ${eps.length} episodes: yellow sets beat the ghost, half tied, dashed lost">${out}</svg><figcaption>Last ${eps.length === 1 ? 'episode' : eps.length + ' episodes'}</figcaption></figure>`;
 }
 
 function epColumn(ep) {
-  let tie = 0;
-  for (const it of ep.items) for (const x of it.sets) if (x.res === 'tie') tie++;
-  const parts = [...Array(ep.score.you).fill('you'), ...Array(tie).fill('half'), ...Array(ep.score.ghost).fill('ghost')].slice(0, 24);
+  let tie = 0, logged = 0;
+  for (const it of ep.items) for (const x of it.sets) { if (x.res === 'tie') tie++; if (!x.res) logged++; }
+  const parts = [...Array(ep.score.you).fill('you'), ...Array(tie).fill('half'), ...Array(ep.score.ghost).fill('ghost'), ...Array(logged).fill('logged')].slice(0, 24);
   const b = 18, gap = 3, cols = 3;
   const rows = Math.max(1, Math.ceil(parts.length / cols));
   const h = rows * (b + gap) - gap, w = cols * (b + gap) - gap;
@@ -112,7 +124,7 @@ function viewAuth() {
     </section>
     <div class="tabs" role="tablist">
       <button class="tab ${join ? 'on' : ''}" data-act="tab" data-tab="join" role="tab" aria-selected="${join}">Join</button>
-      <button class="tab ${join ? '' : 'on'}" data-act="tab" data-tab="return" role="tab" aria-selected="${!join}">Return</button>
+      <button class="tab ${join ? '' : 'on'}" data-act="tab" data-tab="return" role="tab" aria-selected="${!join}">Sign in</button>
     </div>
     ${join ? `<form class="card form" data-form="join" autocomplete="on" novalidate>
       <label class="field"><span>Invite code</span>
@@ -190,8 +202,8 @@ function viewPlace(name) {
       ${note ? `<p class="grounds-note">${esc(note)}</p>` : ''}
       <p class="hint">${cfg.how}</p>
       ${name === 'boulders'
-        ? (w.bosses.length ? `<ul class="forms">${w.bosses.slice().reverse().map((b) => `<li><b>${esc(b.what)}</b><span>Ep. ${b.n} · ${esc(niceDate(b.date))}</span></li>`).join('')}</ul>` : '<p class="note">No bosses beaten yet. A boss appears when you get close to your best.</p>')
-          + (waiting.length ? `<div class="boss-banner"><span class="boss-k">Boss waiting</span>${waiting.slice(0, 2).map((x) => `<p>${x}</p>`).join('')}</div>` : '')
+        ? (w.bosses.length ? `<ul class="forms">${w.bosses.slice().reverse().map((b) => `<li><b>${esc(b.what)}</b><span>Ep. ${b.n} · ${esc(niceDate(b.date))}</span></li>`).join('')}</ul>` : `<p class="note">${waiting.length ? 'No bosses beaten yet. Beat the one waiting to split your first boulder.' : 'No bosses beaten yet. A boss appears when you get close to your best.'}</p>`)
+          + bossBanner(waiting)
         : (exs.length ? `<ul class="forms">${exs.map((e) => {
           const ex = find(e.id);
           const g = s.last[e.id] && s.last[e.id].sets[0];
@@ -210,9 +222,19 @@ function waitingBosses(s) {
     seen.add(id);
     const ex = find(id);
     const b = ex && bossFor(ex, s);
-    if (b) out.push(bossLine(ex, b));
+    if (b) out.push({ id, line: bossLine(ex, b) });
   }
   return out;
+}
+
+function bossBanner(waiting) {
+  if (!waiting.length) return '';
+  return `<section class="boss-banner">
+    <span class="boss-k">Boss waiting</span>
+    ${waiting.slice(0, 2).map((x) => `<p>${x.line}</p>`).join('')}
+    ${waiting.length > 2 ? `<p class="boss-more">+${waiting.length - 2} more</p>` : ''}
+    <button class="btn primary" data-act="fight" data-id="${esc(waiting[0].id)}">Fight it</button>
+  </section>`;
 }
 
 function grounds(s) {
@@ -222,11 +244,11 @@ function grounds(s) {
     <div class="grounds-scroll">${SCENES.valley || '<div class="scene-wait"></div>'}</div>
     <div class="grounds-foot">
       <span class="kicker">Rank ${w.rank + 1} · ${esc(w.rankName)}</span>
+      ${skyLine() ? `<span class="sky-tag">${skyLine()}</span>` : ''}
       <span class="grounds-pl">PL ${w.power.toLocaleString('en-IN')}</span>
     </div>
     ${note ? `<p class="grounds-note">${esc(note)}</p>` : ''}
-    <div class="grounds-go">${[['dojo', 'Dojo'], ['climb', 'Climb'], ['cliff', 'Cliff'], ['yard', 'Yard'], ['forge', 'Forge'], ['boulders', 'Boulders']].map(([v, l]) => `<button class="chip" data-act="go" data-view="${v}">${l}</button>`).join('')}</div>
-    <p class="hint">Tap a place in the grounds to go in.${skyLine()}</p>
+    <div class="grounds-go">${[['dojo', 'Dojo', 'rank'], ['climb', 'Climb', 'legs'], ['cliff', 'Cliff', 'pull'], ['yard', 'Yard', 'push'], ['forge', 'Forge', 'arms'], ['boulders', 'Boulders', 'bosses']].map(([v, l, k]) => `<button class="place-chip" data-act="go" data-view="${v}"><b>${l}</b><small>${k}</small></button>`).join('')}</div>
   </section>`;
 }
 
@@ -282,7 +304,7 @@ function skyLine() {
   const bits = [];
   if (k.city) bits.push(k.city);
   if (k.festival) bits.push({ diwali: 'Happy Diwali', holi: 'Happy Holi', newyear: 'Happy New Year' }[k.festival]);
-  return bits.length ? ' ' + esc(bits.join(' · ')) : '';
+  return bits.length ? esc(bits.join(' · ')) : '';
 }
 
 function decorate(fresh) {
@@ -322,6 +344,23 @@ function decorate(fresh) {
   }
 }
 
+function draftDone(d) {
+  let done = 0, all = 0;
+  for (const it of d.items) for (const x of it.sets) { all++; if (x.done) done++; }
+  return `${done} of ${all} sets done`;
+}
+
+function guide() {
+  return `<section class="guide card">
+    <span class="kicker">How it works</span>
+    <ol>
+      <li><span><b>Log a workout.</b> Pick exercises, then tap Done after each set.</span></li>
+      <li><span><b>Repeat it next time.</b> Each set races the same set from last time. That is your ghost.</span></li>
+      <li><span><b>Beat it, lay a block.</b> Your wins build the grounds above.</span></li>
+    </ol>
+  </section>`;
+}
+
 function viewHome() {
   const s = sum();
   const tpl = templates(s);
@@ -335,13 +374,11 @@ function viewHome() {
       ${climb(s.recent)}
     </section>
     ${st.draft ? `<section class="card resume">
-      <div><span class="kicker">Unfinished</span><h2>${esc(st.draft.items.map((i) => (find(i.exId) || {}).name).filter(Boolean).slice(0, 2).join(', ') || 'Workout')}</h2></div>
+      <div><span class="kicker">Unfinished · ${draftDone(st.draft)}</span><h2>${esc(st.draft.items.map((i) => (find(i.exId) || {}).name).filter(Boolean).slice(0, 2).join(', ') || 'Workout')}</h2></div>
       <div class="row-btns"><button class="btn primary" data-act="resume">Resume</button><button class="btn outline" data-act="discard">Discard</button></div>
     </section>` : ''}
-    ${waiting.length ? `<section class="boss-banner">
-      <span class="boss-k">Boss waiting</span>
-      ${waiting.slice(0, 2).map((w) => `<p>${w}</p>`).join('')}
-    </section>` : ''}
+    ${s.episodes ? '' : guide()}
+    ${st.draft ? '' : bossBanner(waiting)}
     <section class="start">
       ${tpl.map((t) => {
         const names = t.ex.map((id) => (find(id) || {}).name).filter(Boolean);
@@ -356,9 +393,9 @@ function viewHome() {
       <span class="kicker">Last episode</span>
       <button class="ep-row" data-act="open-ep" data-n="${last.n}" data-from="home">
         <span class="ep-row-n">${last.n}</span>
-        <span class="ep-row-body"><b>${esc(last.title)}</b><small>${esc(niceDate(last.date))}</small></span>
+        <span class="ep-row-body"><b>${esc(last.title)}</b><small>${esc(niceDate(last.date))}${scoreText(last)}</small></span>${epMini(last)}
       </button>
-    </section>` : `<p class="note">Your first episode starts when you log your first set.</p>`}
+    </section>` : ''}
     <nav class="links">
       <button class="btn outline" data-act="go" data-view="history">History</button>
       <button class="btn outline" data-act="go" data-view="progress">Progress</button>
@@ -370,23 +407,28 @@ function viewPicker() {
   const p = st.picker;
   const q = p.q.trim().toLowerCase();
   const list = allExercises(custom()).filter((e) => (p.group === 'All' || e.group === p.group) && (!q || e.name.toLowerCase().includes(q)));
+  if (p.group === 'All' && !q) list.sort((a, b) => GROUPS.indexOf(a.group) - GROUPS.indexOf(b.group));
   const done = sum().last;
   const count = p.sel.length;
   const back = p.mode === 'add' ? 'workout' : 'home';
   return `${bar(p.mode === 'add' ? 'Add exercise' : 'Pick exercises', { back })}
   <main class="picker">
-    <input class="search" data-field="q" placeholder="Search exercises" value="${esc(p.q)}" autocomplete="off" aria-label="Search exercises">
-    <div class="chips">
-      ${['All', ...GROUPS].map((g) => `<button class="chip ${p.group === g ? 'on' : ''}" data-act="group" data-g="${g}">${g}</button>`).join('')}
+    <div class="picker-top">
+      <input class="search" data-field="q" placeholder="Search exercises" value="${esc(p.q)}" autocomplete="off" aria-label="Search exercises">
+      <div class="chips">
+        ${['All', ...GROUPS].map((g) => `<button class="chip ${p.group === g ? 'on' : ''}" data-act="group" data-g="${g}">${g}</button>`).join('')}
+      </div>
+    ${count ? `<div class="picked" aria-label="Picked">${p.sel.map((id, k) => `<button class="picked-chip" data-act="pick" data-id="${esc(id)}" aria-label="Remove ${esc((find(id) || {}).name || id)}"><span>${k + 1}</span>${esc((find(id) || {}).name || id)}${ICON.x}</button>`).join('')}</div>` : `<p class="hint">Tap exercises in the order you'll do them.</p>`}
     </div>
     <ul class="ex-list">
-      ${list.map((e) => {
+      ${list.map((e, k) => {
         const on = p.sel.includes(e.id);
-        return `<li><button class="ex-pick ${on ? 'on' : ''}" data-act="pick" data-id="${esc(e.id)}" aria-pressed="${on}">
-          <span><b>${esc(e.name)}</b><small>${esc(e.group)}${e.bw ? ' · bodyweight' : ''}${done[e.id] ? ' · has a ghost' : ''}</small></span>
-          <span class="tick">${on ? ICON.check : ''}</span>
+        const head = (p.group === 'All' && !q && (k === 0 || list[k - 1].group !== e.group)) ? `<li class="ex-group">${esc(e.group)}</li>` : '';
+        return `${head}<li><button class="ex-pick ${on ? 'on' : ''}" data-act="pick" data-id="${esc(e.id)}" aria-pressed="${on}">
+          <span><b>${esc(e.name)}</b><small>${e.bw ? 'Bodyweight' : 'Weights'}${done[e.id] ? ` · ghost ${esc(fmtSet(e, done[e.id].sets[0]))}` : ''}</small></span>
+          <span class="tick">${on ? p.sel.indexOf(e.id) + 1 : ''}</span>
         </button></li>`;
-      }).join('') || '<li class="note">Nothing found.</li>'}
+      }).join('') || '<li class="note">Nothing found. Add it as your own exercise below.</li>'}
     </ul>
     ${p.custom ? `<form class="card form" data-form="custom">
       <label class="field"><span>Exercise name</span><input name="cname" maxlength="40" required></label>
@@ -396,13 +438,16 @@ function viewPicker() {
       <div class="row-btns"><button class="btn black" type="submit">Add</button><button class="btn outline" type="button" data-act="custom-off">Cancel</button></div>
     </form>` : '<button class="link" data-act="custom-on">+ Add your own exercise</button>'}
   </main>
-  <footer class="sticky"><button class="btn primary" data-act="start" ${count ? '' : 'disabled'}>${p.mode === 'add' ? `Add ${count || ''} to workout` : `Start Ep. ${nextEp()}${count ? ` · ${count}` : ''}`}</button></footer>`;
+  <footer class="sticky"><button class="btn primary" data-act="start" ${count ? '' : 'disabled'}>${!count ? 'Pick at least one' : p.mode === 'add' ? `Add ${count} to workout` : `Start Ep. ${nextEp()} · ${count} exercise${count === 1 ? '' : 's'}`}</button></footer>`;
 }
 
 function stamp(res, ex, s, g) {
   if (res === 'beat') return `<span class="stamp beat">Beat ${esc(diffText(ex, s, g))}</span>`;
   if (res === 'tie') return '<span class="stamp tie">Tied</span>';
-  if (res === 'lose') return `<span class="stamp lose">Ghost ${esc(diffText(ex, g, s).replace('Stronger', 'wins'))}</span>`;
+  if (res === 'lose') {
+    const d = diffText(ex, g, s);
+    return `<span class="stamp lose">${d === 'Stronger' ? 'Ghost wins' : 'Short ' + esc(d.replace('+', ''))}</span>`;
+  }
   return '<span class="stamp logged">Logged</span>';
 }
 
@@ -413,7 +458,7 @@ function setInputs(i, j, s, ex, field = '') {
       <input class="num" data-field="r${field}" data-i="${i}" data-j="${j}" inputmode="numeric" value="${esc(s.r)}" aria-label="Reps">
       <button class="step" data-act="rep" data-i="${i}" data-j="${j}" data-d="1" aria-label="One more">+</button>
     </div>
-    ${ex.bw ? `<span class="unit">${ex.id === 'plank' ? 'sec' : 'reps'}</span>` : `<label class="kg"><input class="num" data-field="w${field}" data-i="${i}" data-j="${j}" inputmode="decimal" value="${esc(fmtKg(s.w))}" aria-label="Weight in kg"><span class="unit">kg</span></label>`}
+    ${ex.bw ? `<span class="unit">${ex.id === 'plank' ? 'sec' : 'reps'}</span>` : `<label class="kg"><input class="num ${Number(s.w) > 0 ? '' : 'empty'}" data-field="w${field}" data-i="${i}" data-j="${j}" inputmode="decimal" value="${Number(s.w) > 0 ? esc(fmtKg(s.w)) : ''}" placeholder="0" aria-label="Weight in kg"><span class="unit">kg</span></label>`}
   </div>`;
 }
 
@@ -451,7 +496,7 @@ function viewWorkout() {
           return `<div class="set">
             <span class="n">${j + 1}</span>
             <div class="set-body">
-              <span class="ghost-line">${g ? `Ghost <b>${esc(fmtSet(ex, g))}</b>` : 'No ghost'}</span>
+              ${g ? `<span class="ghost-line">Ghost <b>${esc(fmtSet(ex, g))}</b></span>` : ''}
               ${setInputs(i, j, set, ex)}
             </div>
             <button class="done-btn" data-act="done" data-i="${i}" data-j="${j}">Done</button>
@@ -474,7 +519,7 @@ function bossBox(i, it, ex, b) {
   const bo = it.boss;
   const head = `<div class="boss-head"><span class="boss-k">Boss</span><span>Your best: <b>${esc(fmtSet(ex, b.best))}</b> · Ep. ${b.best.ep}</span></div>`;
   if (!bo) return `<div class="boss">${head}
-    <p class="boss-p">One all-out set. Beat ${esc(fmtSet(ex, b.best))} and your new best becomes the next boss.</p>
+    <p class="boss-p">One all-out set after your normal sets. Beat ${esc(fmtSet(ex, b.best))} and that becomes your new best.</p>
     <button class="btn black" data-act="boss" data-i="${i}">Fight: ${esc(fmtSet(ex, b.target))}</button>
   </div>`;
   if (bo.done) {
@@ -524,7 +569,7 @@ function viewEpisode() {
       ${ep.items.map((it) => {
         const ex = { id: it.exId, name: it.name, bw: it.bw };
         return `<div class="ep-item">
-          <div class="ep-item-head"><b>${esc(it.name)}</b>${it.best && !(it.boss && it.boss.win) && it.sets.length ? '<span class="badge">New best</span>' : ''}</div>
+          <div class="ep-item-head"><b>${esc(it.name)}</b>${it.best && !(it.boss && it.boss.win) && it.sets.some((x) => x.res) ? '<span class="badge">New best</span>' : !it.sets.some((x) => x.res) && !it.boss ? '<span class="badge plain">First time</span>' : ''}</div>
           <div class="ep-sets">${it.sets.map((x) => `<span class="pill ${x.res || ''}">${esc(fmtSet(ex, x))}</span>`).join('')}</div>
           ${it.boss ? `<p class="ep-boss ${it.boss.win ? 'won' : ''}">${it.boss.win ? 'Boss defeated' : 'Boss: to be continued'} · ${esc(fmtSet(ex, it.boss.got))}</p>` : ''}
         </div>`;
@@ -534,13 +579,29 @@ function viewEpisode() {
   </main>`;
 }
 
+function epMini(e) {
+  const p = epParts(e);
+  const parts = [...Array(p.you).fill('you'), ...Array(p.tie).fill('half'), ...Array(p.ghost).fill('ghost'), ...Array(p.logged).fill('logged')].slice(0, 12);
+  if (!parts.length) return '';
+  const b = 12, gap = 3, cols = 4;
+  const rows = Math.ceil(parts.length / cols);
+  const h = rows * (b + gap) - gap, w = cols * (b + gap) - gap;
+  return `<svg class="ep-mini" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">${parts.map((t, i) => blk(t, (i % cols) * (b + gap), h - (Math.floor(i / cols) + 1) * b - Math.floor(i / cols) * gap, b)).join('')}</svg>`;
+}
+
+function scoreText(e) {
+  const p = epParts(e);
+  if (!(p.you + p.ghost + p.tie)) return '';
+  return ` · You ${p.you}${p.tie ? `, tied ${p.tie}` : ''}, ghost ${p.ghost}`;
+}
+
 function viewHistory() {
   const r = sum().recent;
   return `${bar('History', { back: 'home' })}
   <main class="list-page">
     ${r.length ? r.map((e) => `<button class="ep-row" data-act="open-ep" data-n="${e.n}" data-from="history">
       <span class="ep-row-n">${e.n}</span>
-      <span class="ep-row-body"><b>${esc(e.title)}</b><small>${esc(niceDate(e.date))}${e.you + e.ghost ? ` · You ${e.you}, ghost ${e.ghost}` : ''}</small></span>
+      <span class="ep-row-body"><b>${esc(e.title)}</b><small>${esc(niceDate(e.date))}${scoreText(e)}</small></span>${epMini(e)}
     </button>`).join('') : '<p class="note">No episodes yet. Finish a workout and it shows up here.</p>'}
     ${errBox()}
   </main>`;
@@ -584,7 +645,7 @@ function viewExercise() {
     <section class="card ex-chart">
       <span class="kicker">${ex.bw ? 'Top set, reps' : 'Top set, estimated 1-rep max'}</span>
       ${spark(h.map((x) => x.m), 320, 140) || '<p class="note">One more session and a line appears.</p>'}
-      <p class="best">Best: <b>${esc(fmtSet(ex, s.best[id]))}</b> · Ep. ${s.best[id] ? s.best[id].ep : '–'}</p>
+      <p class="best">Best: <b>${esc(fmtSet(ex, s.best[id]))}</b> · Ep. ${s.best[id] ? s.best[id].ep : '–'}${!ex.bw && s.best[id] ? `<br><span class="hint">That is about ${Math.round(s.best[id].m)} kg for a single rep.</span>` : ''}</p>
     </section>
     ${h.slice().reverse().map((x) => `<div class="hist-row"><span>Ep. ${x.ep}</span><span>${esc(niceDate(x.d))}</span><b>${esc(fmtSet(ex, x))}</b></div>`).join('')}
   </main>`;
@@ -674,6 +735,23 @@ function stampOverlay(text) {
   setTimeout(() => el.remove(), 1300);
 }
 
+let toastTimer;
+function toast(text) {
+  let el = document.querySelector('.toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.className = 'toast';
+    el.setAttribute('role', 'status');
+    document.body.appendChild(el);
+  }
+  el.textContent = text;
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
 function tick() {
   const el = document.getElementById('timer');
   if (!el || !st.draft) return;
@@ -694,6 +772,7 @@ function persist() {
 function startWorkout(ids) {
   const items = ids.map((id) => find(id)).filter(Boolean).map((ex) => newItem(ex, sum()));
   if (!items.length) return;
+  if (st.draft && !confirm('You have an unfinished workout. Start a new one and throw it away?')) return;
   st.draft = { startedAt: Date.now(), items };
   persist();
   go('workout');
@@ -766,6 +845,10 @@ const actions = {
     void g.getBoundingClientRect();
     g.classList.add('wobble');
   },
+  'fight': (el) => {
+    const t = templates(sum(), 30).find((r) => r.ex.includes(el.dataset.id));
+    if (t) startWorkout(t.ex);
+  },
   'leg-day': () => {
     const s = sum();
     const t = templates(s, 30).find((r) => r.ex.some((id) => (find(id) || {}).group === 'Legs'));
@@ -797,18 +880,24 @@ const actions = {
   'add-ex': () => { st.picker = { sel: [], q: '', group: 'All', mode: 'add', custom: false }; go('picker'); },
   'rm-ex': (el) => { const it = st.draft.items[+el.dataset.i]; if (it.sets.some((s) => s.done) && !confirm('Remove this exercise and its sets?')) return; st.draft.items.splice(+el.dataset.i, 1); persist(); render(); },
   'rep': (el) => { const s = setAt(el.dataset.i, el.dataset.j); s.r = Math.max(0, (parseInt(s.r, 10) || 0) + +el.dataset.d); persist(); render(); },
-  'done': (el) => { const s = setAt(el.dataset.i, el.dataset.j); if (!(s.r > 0)) { st.err = 'Add at least 1 rep.'; render(); return; } st.err = ''; s.done = true; persist(); render(); },
+  'done': (el) => {
+    const s = setAt(el.dataset.i, el.dataset.j);
+    const ex = find(st.draft.items[+el.dataset.i].exId);
+    if (!(s.r > 0)) { toast('Add at least 1 rep first.'); return; }
+    if (ex && !ex.bw && !(Number(s.w) > 0)) { toast(`Add the weight for ${ex.name} first.`); app.querySelector(`[data-field="w"][data-i="${el.dataset.i}"][data-j="${el.dataset.j}"]`)?.focus(); return; }
+    s.done = true; persist(); render();
+  },
   'undo': (el) => { setAt(el.dataset.i, el.dataset.j).done = false; persist(); render(); },
   'add-set': (el) => { const it = st.draft.items[+el.dataset.i]; const prev = it.sets[it.sets.length - 1] || { r: 10, w: 0 }; it.sets.push({ r: prev.r, w: prev.w, done: false }); persist(); render(); },
   'rm-set': (el) => { const it = st.draft.items[+el.dataset.i]; if (it.sets.length > 1 && !it.sets[it.sets.length - 1].done) it.sets.pop(); persist(); render(); },
   'boss': (el) => { const it = st.draft.items[+el.dataset.i]; const ex = find(it.exId); const b = bossFor(ex, sum()); it.boss = { target: b.target, r: b.target.r, w: b.target.w, done: false }; persist(); render(); },
-  'boss-done': (el) => { const it = st.draft.items[+el.dataset.i]; if (!(it.boss.r > 0)) return; it.boss.done = true; persist(); render(); },
+  'boss-done': (el) => { const it = st.draft.items[+el.dataset.i]; if (!(it.boss.r > 0)) { toast('Add at least 1 rep first.'); return; } it.boss.done = true; persist(); render(); },
   'boss-undo': (el) => { st.draft.items[+el.dataset.i].boss.done = false; persist(); render(); },
   'boss-skip': (el) => { st.draft.items[+el.dataset.i].boss = null; persist(); render(); },
   'finish': async () => {
     const d = st.draft;
     const any = d.items.some((it) => it.sets.some((s) => s.done) || (it.boss && it.boss.done));
-    if (!any) { st.err = 'Log at least one set first.'; render(); return; }
+    if (!any) { toast('Tap Done on at least one set first.'); return; }
     const open = d.items.reduce((a, it) => a + it.sets.filter((s) => !s.done).length, 0);
     if (open && !confirm(`${open} set${open === 1 ? ' is' : 's are'} not done. Finish anyway?`)) return;
     st.busy = 'Saving episode…';
