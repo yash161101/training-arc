@@ -243,3 +243,10 @@ button:disabled { cursor: default; opacity: .55; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+.bar-right { display: flex; align-items: center; gap: 10px; }
+.sync-chip { font: 700 12px/1 var(--body); letter-spacing: .04em; padding: 6px 8px; border: var(--line); background: var(--paper-2); white-space: nowrap; }
+.sync-chip.ok { border-color: rgba(20,20,20,.35); color: var(--mute); }
+.sync-chip.wait { background: var(--ghost-bg); color: var(--ghost); border: 2px dashed var(--ghost); }
+.sync-note { margin: 10px 0 0; font-size: 13px; font-weight: 700; color: var(--mute); }
+.sync-note.wait { color: var(--ghost); }

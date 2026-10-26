@@ -18,7 +18,7 @@ const browser = await chromium.launch(process.env.CHROME ? { executablePath: pro
 const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
 const page = await ctx.newPage();
 const errors = [];
-page.on('console', (m) => { if (m.type() === 'error' && !/status of (401|403|404)/.test(m.text())) errors.push(m.text()); });
+page.on('console', (m) => { if (m.type() === 'error' && !/status of (401|403|404)|ERR_INTERNET_DISCONNECTED|net::ERR_FAILED/.test(m.text())) errors.push(m.text()); });
 page.on('pageerror', (e) => errors.push(e.message));
 page.on('dialog', (d) => d.accept());
 const shot = (n) => page.screenshot({ path: SHOTS + n + '.png' });
@@ -153,6 +153,43 @@ ok('Progress shows charts', !!(await page.$('.prog-row .spark')));
 await shot('13-progress');
 
 await page.click('[data-act="go"][data-view="home"]');
+await page.waitForSelector('.hero');
+await page.waitForFunction(() => navigator.serviceWorker && navigator.serviceWorker.controller, null, { timeout: 15000 }).catch(() => {});
+ok('Offline cache is installed', await page.evaluate(() => !!(navigator.serviceWorker && navigator.serviceWorker.controller)));
+await ctx.setOffline(true);
+await page.reload();
+await page.waitForSelector('.hero', { timeout: 20000 });
+ok('App opens with no internet', (await page.textContent('.ep-num')).trim() === 'Ep. 5');
+ok('Shows it is offline', (await page.textContent('.sync-chip')).includes('Offline'));
+await page.click('[data-act="repeat"]');
+await page.waitForSelector('.workout');
+await doAllSets();
+await finishEpisode();
+ok('Episode saves with no internet', (await page.textContent('.sync-note')).includes('this phone'));
+await page.click('[data-act="go"][data-view="home"]');
+await page.waitForSelector('.hero');
+ok('Home moves on while offline', (await page.textContent('.ep-num')).trim() === 'Ep. 6');
+ok('Shows 1 waiting to sync', (await page.textContent('.sync-chip')).includes('1'));
+await shot('15-offline-waiting');
+await ctx.setOffline(false);
+const synced = await page.waitForFunction(() => { const c = document.querySelector('.sync-chip'); return c && c.textContent.includes('Synced'); }, null, { timeout: 30000 }).then(() => true, () => false);
+ok('Syncs by itself when back online', synced);
+ok('No leftover unfinished workout', !(await page.$('[data-act="resume"]')));
+
+const ctx3 = await browser.newContext({ viewport: { width: 390, height: 844 } });
+const p3 = await ctx3.newPage();
+p3.on('dialog', (d) => d.accept());
+await p3.goto(BASE);
+await p3.waitForSelector('form[data-form="join"]');
+await p3.click('[data-act="tab"][data-tab="return"]');
+await p3.fill('input[name="name"]', NAME);
+await p3.fill('input[name="oath"]', OATH);
+await p3.click('button[type="submit"]');
+await p3.waitForSelector('.hero', { timeout: 30000 });
+ok('Another device sees the offline episode', (await p3.textContent('.ep-num')).trim() === 'Ep. 6');
+ok('Another device has no stale unfinished workout', !(await p3.$('[data-act="resume"]')));
+await ctx3.close();
+
 await page.click('[data-act="go"][data-view="settings"]');
 await page.click('[data-act="lock"]');
 await page.waitForSelector('form[data-form="return"]');
@@ -164,7 +201,7 @@ ok('Wrong passphrase is refused', (await page.textContent('.err')).includes('Wro
 await page.fill('input[name="oath"]', OATH.toUpperCase() + '  ');
 await page.click('button[type="submit"]');
 await page.waitForSelector('.hero', { timeout: 30000 });
-ok('Passphrase works regardless of case and spaces', (await page.textContent('.ep-num')).trim() === 'Ep. 5');
+ok('Passphrase works regardless of case and spaces', (await page.textContent('.ep-num')).trim() === 'Ep. 6');
 
 const page2 = await (await browser.newContext({ viewport: { width: 390, height: 844 } })).newPage();
 await page2.goto(BASE);

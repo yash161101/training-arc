@@ -104,4 +104,5 @@ INVITE=pick-a-code-for-local-testing npm run check
 ```
 
 It signs up a test fighter, logs four episodes, beats a ghost, fights a boss, reloads mid-workout,
-locks and logs back in. Screenshots land in `checks/shots/`.
+goes offline, finishes an episode with no internet, comes back online and checks it synced to
+another browser, then locks and logs back in. Screenshots land in `checks/shots/`.
