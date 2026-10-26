@@ -83,6 +83,21 @@ Edit `AGENTS.md`; never replace the link with a copy.
   (server count + 1), so two phones offline at once never clash. Sync runs on open, on coming back
   online, when the app comes to the front, and every minute. Home shows a chip: Synced, Syncing,
   Offline · N, Waiting · N. Lock tries to sync first and warns if anything would be lost.
+- **Training Grounds (TG-01):** home opens on an illustrated valley (swipe sideways). Tap the
+  dojo or the hill to go inside. Everything is worked out from the summary on the phone
+  (`js/world.js`), nothing new is stored:
+  - Places: Back = cliff and rope, Chest and Shoulders = posts, Arms = forge, Legs = hill.
+  - Steps on the climb: each leg exercise in a session lays 3, a new best lays 1 more (130 to the
+    gate). The next steps show dashed.
+  - Neglect (only for groups you have trained): 7+ days without legs = moss on the stairs (and on
+    the last laid steps of the climb), 14+ = vines on the gate; 7+ days without push = vines on the
+    posts; 7+ days without arms = the forge goes cold. Home shows the worst one in a line.
+  - Rank from good weeks (3+ sessions Monday to Sunday): Rookie 0, Trainee 1, Fighter 3, Veteran 6
+    (adds the dojo's second floor, shown dashed until then), Master 10, Legend 16.
+  - Power level: 10 x (best estimated 1-rep max per weighted exercise + 4 x best reps per
+    bodyweight exercise) + 50 per good week. Forms: 1 + one per 3 sessions of an exercise, max 5.
+  - Each boss beaten leaves a split boulder (two shown); a waiting boss shows as a whole one.
+  - Night follows dark mode.
 - **Records:** `summary` (episode count, each exercise's last sets, bests, history, boss fights,
   recent episodes, custom exercises), `ep-<time>-<random>` (one per episode; older ones are `ep-000001`...), `draft` (the workout in
   progress, also kept encrypted on the phone so a reload or crash loses nothing).
@@ -102,6 +117,10 @@ Edit `AGENTS.md`; never replace the link with a copy.
 - `public/js/app.js`: screens and actions. `logic.js`: ghost, boss, episode rules.
   `store.js`: saving and loading (encrypt, outbox, sync, compare-and-swap, drafts). `sw.js`: offline cache. `crypto.js`: the oath and
   encryption. `exercises.js`: the exercise library. `keystore.js`: IndexedDB. `api.js`: fetch.
+  `world.js`: the Training Grounds state and painting.
+- `public/world/`: the three scenes (valley, climb, dojo) as SVG with named parts the app switches
+  on and off. Made by `tools/world/make.sh` (Python scripts; they refuse anything that would float
+  above a surface). Edit the scripts, then rerun `make.sh`; never hand-edit the SVGs.
 - `checks/e2e.mjs`: the full browser check (see README).
 - `.github/workflows/`: `checks.yml` (browser check on every push and PR), `deploy.yml` (push to
   `main`: checks, then database migrations and deploy; skipped until the Cloudflare secrets
@@ -125,6 +144,12 @@ Edit `AGENTS.md`; never replace the link with a copy.
 - **One idea per commit.**
 
 ## Latest (start here)
+
+**26 October 2026: Training Grounds built (branch `grounds-build`, PR open).** Owner: "Build
+now". The valley on home, inside the dojo (power level, rank, forms) and the climb (legs), all
+driven by real data, night in dark mode, cached offline. Checks 52/52 in light and dark. The
+other four inside views (cliff, posts, forge, boulders) are not drawn yet; their places show in
+the valley but can't be opened.
 
 **26 October 2026: the world is the Training Grounds (TG-01, agreed).** The owner loves anime
 (Naruto, Demon Slayer, DBZ) and Vishal's village, so the world is the training ground outside the
